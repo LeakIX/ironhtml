@@ -35,6 +35,89 @@
 //! - [Content categories](https://html.spec.whatwg.org/multipage/dom.html#content-models)
 //! - [Element index](https://html.spec.whatwg.org/multipage/indices.html#elements-3)
 //! - [Void elements](https://html.spec.whatwg.org/multipage/syntax.html#void-elements)
+//!
+//! ## Design Decisions
+//!
+//! ### Zero-Sized Types (ZSTs) for Elements
+//!
+//! Each HTML element is defined as a unit struct with no fields:
+//!
+//! ```rust,ignore
+//! pub struct Div;
+//! pub struct Span;
+//! pub struct A;
+//! ```
+//!
+//! This design provides:
+//!
+//! - **Zero runtime overhead**: ZSTs occupy no memory at runtime. The type
+//!   exists only at compile time for type checking.
+//! - **Compile-time markers**: Elements serve as type-level tags that carry
+//!   semantic meaning without any runtime representation.
+//! - **Optimal codegen**: The Rust compiler can completely eliminate ZSTs
+//!   during optimization, resulting in no additional instructions.
+//!
+//! ### Traits for Content Categories
+//!
+//! Content categories from the WHATWG spec are modeled as marker traits:
+//!
+//! ```rust,ignore
+//! pub trait FlowContent {}
+//! pub trait PhrasingContent: FlowContent {}
+//! pub trait SectioningContent: FlowContent {}
+//! ```
+//!
+//! This design enables:
+//!
+//! - **Compile-time constraint checking**: Generic functions can require
+//!   elements to belong to specific content categories.
+//! - **Trait hierarchy reflects spec**: The supertrait relationships
+//!   (e.g., `PhrasingContent: FlowContent`) mirror the WHATWG specification
+//!   where all phrasing content is also flow content.
+//! - **Extensibility**: New element types can implement these traits to
+//!   integrate with existing validation logic.
+//!
+//! ### The CanContain Pattern
+//!
+//! Parent-child relationships use a binary trait pattern:
+//!
+//! ```rust,ignore
+//! pub trait CanContain<Child> {}
+//!
+//! // Specific relationships
+//! impl CanContain<Li> for Ul {}
+//! impl CanContain<Tr> for Table {}
+//!
+//! // Generic relationships via content categories
+//! impl<T: FlowContent> CanContain<T> for Div {}
+//! impl<T: PhrasingContent> CanContain<T> for Span {}
+//! ```
+//!
+//! This design provides:
+//!
+//! - **Compile-time validation**: Invalid nesting like `<ul><div>` or
+//!   `<p><div>` produces a compilation error rather than a runtime error.
+//! - **Precise control**: Each parent-child relationship is explicitly
+//!   declared, matching the WHATWG content model specification.
+//! - **Generic implementations**: Using trait bounds like `impl<T: FlowContent>`
+//!   avoids listing every valid child element individually while still
+//!   providing type safety.
+//!
+//! ### Why This Approach?
+//!
+//! Traditional HTML builders use runtime validation or stringly-typed APIs:
+//!
+//! ```rust,ignore
+//! // Runtime validation (discovers errors at runtime)
+//! builder.element("div").child("invalid");  // Error at runtime
+//!
+//! // Stringly-typed (no validation)
+//! builder.element("div").child(builder.element("li"));  // Invalid but compiles
+//! ```
+//!
+//! This crate instead leverages Rust's type system to make invalid HTML
+//! structures impossible to represent. The compiler becomes your HTML
+//! validator, catching errors before your code even runs.
 
 #![no_std]
 
