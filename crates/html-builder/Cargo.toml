@@ -9,4 +9,10 @@ keywords = ["html", "builder", "no-std", "zero-dependency"]
 categories = ["web-programming", "no-std"]
 
 [dependencies]
-# No dependencies - that's the point!
+html-elements.workspace = true
+html-attributes.workspace = true
+
+[features]
+default = ["typed"]
+typed = []
+std = []

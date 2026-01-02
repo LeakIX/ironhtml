@@ -2,7 +2,40 @@
 //!
 //! A minimal, zero-dependency, no-std compatible HTML builder for Rust.
 //!
-//! ## Example
+//! This crate provides two APIs:
+//!
+//! - **Untyped API**: Dynamic HTML construction with runtime tag names
+//! - **Typed API** (via [`typed`] module): Compile-time validated HTML structure
+//!
+//! ## Typed API (Recommended)
+//!
+//! The typed API uses Rust's type system to validate HTML structure at compile time:
+//!
+//! ```rust
+//! use html_builder::typed::{Document, Element};
+//! use html_elements::{Html, Head, Body, Title, H1, Div, P, Meta};
+//!
+//! let page = Document::new()
+//!     .doctype()
+//!     .root::<Html, _>(|html| {
+//!         html.attr("lang", "en")
+//!             .child::<Head, _>(|head| {
+//!                 head.child::<Meta, _>(|m| m.attr("charset", "UTF-8"))
+//!                     .child::<Title, _>(|t| t.text("My Page"))
+//!             })
+//!             .child::<Body, _>(|body| {
+//!                 body.child::<H1, _>(|h| h.text("Welcome"))
+//!                     .child::<P, _>(|p| p.text("Hello, World!"))
+//!             })
+//!     })
+//!     .build();
+//! ```
+//!
+//! Invalid nesting (e.g., `<ul><div>`) produces a compile-time error.
+//!
+//! ## Untyped API
+//!
+//! The untyped API allows dynamic HTML construction:
 //!
 //! ```rust
 //! use html_builder::{Html, Node};
@@ -28,9 +61,15 @@
 //!     .build();
 //! ```
 
-#![no_std]
+#![cfg_attr(not(feature = "std"), no_std)]
+
+#[cfg(feature = "std")]
+extern crate std;
 
 extern crate alloc;
+
+#[cfg(feature = "typed")]
+pub mod typed;
 
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;

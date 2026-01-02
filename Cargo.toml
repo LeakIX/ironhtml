@@ -7,3 +7,7 @@ version = "0.1.0"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/LeakIX/html-builder"
+
+[workspace.dependencies]
+html-elements = { path = "crates/html-elements" }
+html-attributes = { path = "crates/html-attributes" }
