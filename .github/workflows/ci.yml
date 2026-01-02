@@ -63,3 +63,21 @@ jobs:
 
       - name: Clippy
         run: make lint
+
+  parse5:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Run parse5 integration tests
+        run: make test-parse5

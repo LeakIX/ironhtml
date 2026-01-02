@@ -1,0 +1,15 @@
+{
+  "name": "html-builder-parse5-tests",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Integration tests using parse5 to validate HTML output",
+  "type": "module",
+  "scripts": {
+    "test": "node test.js && node random-tests.js",
+    "test:integration": "node test.js",
+    "test:random": "node random-tests.js"
+  },
+  "devDependencies": {
+    "parse5": "^7.2.1"
+  }
+}

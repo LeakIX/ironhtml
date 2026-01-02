@@ -102,6 +102,11 @@ test-doc: ## Run documentation tests
 	@echo "Running doc tests..."
 	$(CARGO) test --doc
 
+.PHONY: test-parse5
+test-parse5: ## Run parse5 integration tests
+	@echo "Running parse5 integration tests..."
+	@cd tests/parse5 && npm install --silent && npm test
+
 # =============================================================================
 # Documentation
 # =============================================================================
@@ -130,7 +135,7 @@ clean: ## Clean build artifacts
 # =============================================================================
 
 .PHONY: ci
-ci: format-check lint test ## Run all CI checks
+ci: format-check lint test test-parse5 ## Run all CI checks
 	@echo "CI checks passed"
 
 # =============================================================================
