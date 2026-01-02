@@ -163,7 +163,11 @@ impl Element {
     where
         F: FnOnce(Self) -> Self,
     {
-        if condition { f(self) } else { self }
+        if condition {
+            f(self)
+        } else {
+            self
+        }
     }
 
     /// Conditionally add content with else branch.
@@ -478,5 +482,25 @@ mod tests {
         assert!(html.contains("<table class=\"table table-sm\">"));
         assert!(html.contains("<code>t1abc123</code>"));
         assert!(html.contains("<code>u1xyz789</code>"));
+    }
+
+    #[test]
+    fn test_hello_world_page() {
+        let html = Html::new()
+            .raw("<!DOCTYPE html>")
+            .elem("html", |e| {
+                e.attr("lang", "en")
+                    .child("head", |e| {
+                        e.child("meta", |e| e.attr("charset", "UTF-8"))
+                            .child("title", |e| e.text("Hello"))
+                    })
+                    .child("body", |e| e.child("h1", |e| e.text("Hello, World!")))
+            })
+            .build();
+
+        assert_eq!(
+            html,
+            r#"<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" /><title>Hello</title></head><body><h1>Hello, World!</h1></body></html>"#
+        );
     }
 }

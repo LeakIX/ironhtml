@@ -1,0 +1,12 @@
+[package]
+name = "html-builder"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "A minimal, zero-dependency HTML builder for Rust"
+keywords = ["html", "builder", "no-std", "zero-dependency"]
+categories = ["web-programming", "no-std"]
+
+[dependencies]
+# No dependencies - that's the point!

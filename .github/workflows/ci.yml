@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - toolchain: stable
+          - toolchain: beta
+          - toolchain: nightly
+            target: wasm32-unknown-unknown
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust ${{ matrix.toolchain }}
+        uses: dtolnay/rust-action@${{ matrix.toolchain }}
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Build
+        run: make build
+        if: matrix.target == ''
+
+      - name: Run tests
+        run: make test
+        if: matrix.target == ''
+
+      - name: Build for WebAssembly
+        run: make build-wasm
+        if: matrix.target == 'wasm32-unknown-unknown'
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-action@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Install taplo
+        run: cargo install taplo-cli
+
+      - name: Check formatting
+        run: make format-check-rust && make format-check-toml
+
+      - name: Clippy
+        run: make lint

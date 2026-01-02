@@ -1,12 +1,9 @@
-[package]
-name = "html-builder"
+[workspace]
+resolver = "2"
+members = ["crates/*"]
+
+[workspace.package]
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-description = "A minimal, zero-dependency HTML builder for Rust"
 repository = "https://github.com/LeakIX/html-builder"
-keywords = ["html", "builder", "no-std", "zero-dependency"]
-categories = ["web-programming", "no-std"]
-
-[dependencies]
-# No dependencies - that's the point!
