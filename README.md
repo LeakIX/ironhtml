@@ -13,7 +13,8 @@ A minimal, zero-dependency, `no_std` HTML builder for Rust following the
 
 ## Documentation
 
-See the [API documentation](https://leakix.github.io/html-builder/html_builder/).
+See the
+[API documentation](https://leakix.github.io/html-builder/html_builder/).
 
 ## License
 
