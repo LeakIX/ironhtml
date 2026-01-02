@@ -389,8 +389,9 @@ impl TreeBuilder {
         for &idx in path.iter().skip(1) {
             // We need to use a pointer trick to satisfy the borrow checker
             let current_ptr = current as *mut Element;
+            #[allow(clippy::needless_borrow)]
             unsafe {
-                if let Some(Node::Element(elem)) = (*current_ptr).children.get_mut(idx) {
+                if let Some(Node::Element(elem)) = (&mut (*current_ptr).children).get_mut(idx) {
                     current = elem;
                 }
             }
