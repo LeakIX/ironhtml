@@ -30,21 +30,6 @@ let html = Html::new()
     .build();
 ```
 
-## API
-
-| Method                | Description                |
-| --------------------- | -------------------------- |
-| `Element::new(tag)`   | Create element             |
-| `.attr(name, value)`  | Add attribute              |
-| `.bool_attr(name)`    | Add boolean attribute      |
-| `.class(name)`        | Add/append class           |
-| `.id(id)`             | Set id                     |
-| `.text(content)`      | Add escaped text           |
-| `.raw(html)`          | Add raw HTML               |
-| `.child(tag, fn)`     | Add child element          |
-| `.children(iter, fn)` | Add children from iterator |
-| `.when(cond, fn)`     | Conditional rendering      |
-
 ## License
 
 MIT
