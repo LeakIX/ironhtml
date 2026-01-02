@@ -14,39 +14,44 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        include:
-          - toolchain: stable
-          - toolchain: beta
-          - toolchain: nightly
-            target: wasm32-unknown-unknown
+        toolchain: [stable, beta]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install Rust ${{ matrix.toolchain }}
-        uses: dtolnay/rust-action@${{ matrix.toolchain }}
+        uses: dtolnay/rust-toolchain@master
         with:
-          targets: ${{ matrix.target }}
+          toolchain: ${{ matrix.toolchain }}
 
       - name: Build
         run: make build
-        if: matrix.target == ''
 
       - name: Run tests
         run: make test
-        if: matrix.target == ''
+
+  wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust nightly
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly
+          targets: wasm32-unknown-unknown
 
       - name: Build for WebAssembly
         run: make build-wasm
-        if: matrix.target == 'wasm32-unknown-unknown'
 
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install Rust
-        uses: dtolnay/rust-action@stable
+        uses: dtolnay/rust-toolchain@master
         with:
+          toolchain: stable
           components: rustfmt, clippy
 
       - name: Install taplo
