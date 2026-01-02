@@ -1,6 +1,7 @@
 # html-builder
 
-A minimal, zero-dependency, `no_std` HTML builder for Rust.
+A minimal, zero-dependency, `no_std` HTML builder for Rust following the
+[WHATWG HTML Living Standard](https://html.spec.whatwg.org/).
 
 ## Features
 
