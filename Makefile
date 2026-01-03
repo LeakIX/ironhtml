@@ -32,6 +32,16 @@ build-wasm: ## Build for WebAssembly target
 	@echo "Building for WebAssembly..."
 	$(CARGO) build --target wasm32-unknown-unknown
 
+.PHONY: build-examples
+build-examples: ## Build and run all examples
+	@echo "Building examples..."
+	$(CARGO) build --examples
+	@echo "Running html-bootstrap examples..."
+	$(CARGO) run --example landing_page > /dev/null
+	$(CARGO) run --example wallet_dashboard > /dev/null
+	$(CARGO) run --example bootstrap_docs > /dev/null
+	@echo "All examples built successfully"
+
 # =============================================================================
 # Formatting
 # =============================================================================
@@ -135,7 +145,7 @@ clean: ## Clean build artifacts
 # =============================================================================
 
 .PHONY: ci
-ci: format-check lint test test-parse5 ## Run all CI checks
+ci: format-check lint test build-examples test-parse5 ## Run all CI checks
 	@echo "CI checks passed"
 
 # =============================================================================

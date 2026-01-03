@@ -121,6 +121,88 @@ pub fn btn_link(text: &str) -> Element<Button> {
         .text(text)
 }
 
+/// Create a button with a loading spinner (border style).
+///
+/// ## Example
+///
+/// ```rust
+/// use html_bootstrap::{buttons::btn_loading, Color};
+///
+/// let btn = btn_loading(Color::Primary, "Loading...");
+/// assert!(btn.render().contains("spinner-border"));
+/// ```
+pub fn btn_loading(color: Color, text: &str) -> Element<Button> {
+    use html_elements::Span;
+
+    let class = format!("btn btn-{}", color.as_str());
+    Element::<Button>::new()
+        .attr("type", "button")
+        .class(&class)
+        .bool_attr("disabled")
+        .child::<Span, _>(|s| {
+            s.class("spinner-border spinner-border-sm")
+                .attr("role", "status")
+                .attr("aria-hidden", "true")
+        })
+        .text(format!(" {}", text))
+}
+
+/// Create a button with a growing loading spinner.
+///
+/// ## Example
+///
+/// ```rust
+/// use html_bootstrap::{buttons::btn_loading_grow, Color};
+///
+/// let btn = btn_loading_grow(Color::Primary, "Loading...");
+/// assert!(btn.render().contains("spinner-grow"));
+/// ```
+pub fn btn_loading_grow(color: Color, text: &str) -> Element<Button> {
+    use html_elements::Span;
+
+    let class = format!("btn btn-{}", color.as_str());
+    Element::<Button>::new()
+        .attr("type", "button")
+        .class(&class)
+        .bool_attr("disabled")
+        .child::<Span, _>(|s| {
+            s.class("spinner-grow spinner-grow-sm")
+                .attr("role", "status")
+                .attr("aria-hidden", "true")
+        })
+        .text(format!(" {}", text))
+}
+
+/// Create a block-level button (full width).
+///
+/// ## Example
+///
+/// ```rust
+/// use html_bootstrap::{buttons::btn_block, Color};
+///
+/// let btn = btn_block(Color::Primary, "Full Width");
+/// assert!(btn.render().contains("w-100"));
+/// ```
+pub fn btn_block(color: Color, text: &str) -> Element<Button> {
+    let class = format!("btn btn-{} w-100", color.as_str());
+    Element::<Button>::new()
+        .attr("type", "button")
+        .class(&class)
+        .text(text)
+}
+
+/// Create a button with an icon.
+pub fn btn_icon(color: Color, icon_class: &str, text: &str) -> Element<Button> {
+    use html_elements::I;
+
+    let class = format!("btn btn-{}", color.as_str());
+    Element::<Button>::new()
+        .attr("type", "button")
+        .class(&class)
+        .child::<I, _>(|i| i.class(icon_class))
+        .text(format!(" {}", text))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

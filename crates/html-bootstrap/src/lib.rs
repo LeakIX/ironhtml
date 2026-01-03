@@ -6,6 +6,47 @@
 //! that integrates seamlessly with the `html-builder` ecosystem. Build
 //! Bootstrap UIs with Rust's compile-time guarantees.
 //!
+//! ## Examples
+//!
+//! Complete examples demonstrating the library's capabilities:
+//!
+//! - **[Landing Page](https://github.com/LeakIX/html-builder/blob/main/crates/html-bootstrap/examples/landing_page.rs)** -
+//!   A complete SaaS landing page with navbar, hero section, features, testimonials, and footer.
+//!
+//! - **[Wallet Dashboard](https://github.com/LeakIX/html-builder/blob/main/crates/html-bootstrap/examples/wallet_dashboard.rs)** -
+//!   Dynamic page generation based on Rust parameters, showing conditional rendering.
+//!
+//! - **[Bootstrap Docs](https://github.com/LeakIX/html-builder/blob/main/crates/html-bootstrap/examples/bootstrap_docs.rs)** -
+//!   A documentation site replica showcasing all Bootstrap components.
+//!
+//! Run examples with: `cargo run --example landing_page`
+//!
+//! ## Available Components
+//!
+//! | Module | Description |
+//! |--------|-------------|
+//! | [`accordion`] | Collapsible content panels |
+//! | [`alerts`] | Contextual feedback messages |
+//! | [`badge`] | Small count and labeling component |
+//! | [`breadcrumb`] | Navigation hierarchy indicator |
+//! | [`buttons`] | Button styles and variants |
+//! | [`cards`] | Flexible content containers |
+//! | [`carousel`] | Slideshow component |
+//! | [`close_button`] | Dismissal buttons |
+//! | [`collapse`] | Collapsible content |
+//! | [`dropdown`] | Dropdown menus |
+//! | [`grid`] | Bootstrap grid system |
+//! | [`list_group`] | Flexible list display |
+//! | [`modal`] | Dialog overlays |
+//! | [`navbar`] | Responsive navigation |
+//! | [`offcanvas`] | Sidebar panels |
+//! | [`pagination`] | Page navigation |
+//! | [`placeholder`] | Loading placeholders |
+//! | [`progress`] | Progress bars |
+//! | [`spinner`] | Loading indicators |
+//! | [`toast`] | Push notifications |
+//! | [`tooltip`] | Tooltips and popovers |
+//!
 //! ## Quick Start
 //!
 //! ```rust
@@ -377,11 +418,27 @@
 
 extern crate alloc;
 
+pub mod accordion;
 pub mod alerts;
+pub mod badge;
+pub mod breadcrumb;
 pub mod buttons;
 pub mod cards;
+pub mod carousel;
+pub mod close_button;
+pub mod collapse;
+pub mod dropdown;
 pub mod grid;
+pub mod list_group;
+pub mod modal;
 pub mod navbar;
+pub mod offcanvas;
+pub mod pagination;
+pub mod placeholder;
+pub mod progress;
+pub mod spinner;
+pub mod toast;
+pub mod tooltip;
 mod types;
 
 pub use types::{Breakpoint, Color, NavbarExpand, Size};
