@@ -40,15 +40,20 @@
 //!
 //! ### Zero-Sized Types (ZSTs) for Elements
 //!
-//! Each HTML element is defined as a unit struct with no fields:
+//! Each HTML element is defined as a unit struct with no fields.
+//! This design provides zero runtime overhead - ZSTs occupy no memory:
 //!
-//! ```rust,ignore
-//! pub struct Div;
-//! pub struct Span;
-//! pub struct A;
+//! ```rust
+//! use html_elements::{Div, Span, A};
+//! use core::mem::size_of;
+//!
+//! // All element types are zero-sized
+//! assert_eq!(size_of::<Div>(), 0);
+//! assert_eq!(size_of::<Span>(), 0);
+//! assert_eq!(size_of::<A>(), 0);
 //! ```
 //!
-//! This design provides:
+//! Benefits:
 //!
 //! - **Zero runtime overhead**: ZSTs occupy no memory at runtime. The type
 //!   exists only at compile time for type checking.
@@ -59,12 +64,27 @@
 //!
 //! ### Traits for Content Categories
 //!
-//! Content categories from the WHATWG spec are modeled as marker traits:
+//! Content categories from the WHATWG spec are modeled as marker traits
+//! with a hierarchy that reflects the specification:
 //!
-//! ```rust,ignore
-//! pub trait FlowContent {}
-//! pub trait PhrasingContent: FlowContent {}
-//! pub trait SectioningContent: FlowContent {}
+//! ```rust
+//! use html_elements::{Div, Span, Article, H1};
+//! use html_elements::{FlowContent, PhrasingContent, SectioningContent, HeadingContent};
+//!
+//! // Generic functions can require specific content categories
+//! fn accepts_flow<T: FlowContent>() {}
+//! fn accepts_phrasing<T: PhrasingContent>() {}
+//! fn accepts_sectioning<T: SectioningContent>() {}
+//!
+//! // Div is flow content
+//! accepts_flow::<Div>();
+//!
+//! // Span is phrasing content (and therefore also flow content)
+//! accepts_phrasing::<Span>();
+//! accepts_flow::<Span>();
+//!
+//! // Article is sectioning content
+//! accepts_sectioning::<Article>();
 //! ```
 //!
 //! This design enables:
@@ -81,16 +101,25 @@
 //!
 //! Parent-child relationships use a binary trait pattern:
 //!
-//! ```rust,ignore
-//! pub trait CanContain<Child> {}
+//! ```rust
+//! use html_elements::{Div, Span, Ul, Li, Table, Tr, Td, P, CanContain};
 //!
-//! // Specific relationships
-//! impl CanContain<Li> for Ul {}
-//! impl CanContain<Tr> for Table {}
+//! // Check valid parent-child relationships at compile time
+//! fn can_nest<Parent: CanContain<Child>, Child>() {}
 //!
-//! // Generic relationships via content categories
-//! impl<T: FlowContent> CanContain<T> for Div {}
-//! impl<T: PhrasingContent> CanContain<T> for Span {}
+//! // Lists: Ul can contain Li
+//! can_nest::<Ul, Li>();
+//!
+//! // Tables: Table contains Tr, Tr contains Td
+//! can_nest::<Tr, Td>();
+//!
+//! // Div can contain any flow content
+//! can_nest::<Div, P>();
+//! can_nest::<Div, Span>();
+//! can_nest::<Div, Ul>();
+//!
+//! // Span can contain phrasing content
+//! can_nest::<Span, Span>();
 //! ```
 //!
 //! This design provides:
@@ -105,15 +134,11 @@
 //!
 //! ### Why This Approach?
 //!
-//! Traditional HTML builders use runtime validation or stringly-typed APIs:
-//!
-//! ```rust,ignore
-//! // Runtime validation (discovers errors at runtime)
-//! builder.element("div").child("invalid");  // Error at runtime
-//!
-//! // Stringly-typed (no validation)
-//! builder.element("div").child(builder.element("li"));  // Invalid but compiles
-//! ```
+//! Traditional HTML builders use runtime validation or stringly-typed APIs
+//! where errors are only discovered at runtime or not at all. For example,
+//! `builder.element("div").child("invalid")` might error at runtime, or
+//! invalid nesting like putting a `<li>` directly in a `<div>` might silently
+//! produce malformed HTML.
 //!
 //! This crate instead leverages Rust's type system to make invalid HTML
 //! structures impossible to represent. The compiler becomes your HTML

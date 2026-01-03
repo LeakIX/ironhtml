@@ -380,7 +380,7 @@ impl Document {
     ///
     /// ## Example
     ///
-    /// ```rust,ignore
+    /// ```rust
     /// use html_builder::typed::Document;
     /// use html_elements::{Html, Head, Body, Title, P};
     ///
@@ -391,7 +391,17 @@ impl Document {
     ///             .child::<Body, _>(|b| b.child::<P, _>(|p| p.text("Hello, World!")))
     ///     });
     ///
-    /// doc.write_to_file("index.html").expect("Failed to write file");
+    /// // Write to a temp file
+    /// let temp_path = std::env::temp_dir().join("html_builder_doctest.html");
+    /// doc.write_to_file(&temp_path).expect("Failed to write file");
+    ///
+    /// // Verify the file was written correctly
+    /// let content = std::fs::read_to_string(&temp_path).unwrap();
+    /// assert!(content.contains("<!DOCTYPE html>"));
+    /// assert!(content.contains("<title>Hello</title>"));
+    ///
+    /// // Clean up
+    /// std::fs::remove_file(&temp_path).ok();
     /// ```
     #[cfg(feature = "std")]
     pub fn write_to_file(&self, path: impl AsRef<std::path::Path>) -> std::io::Result<()> {

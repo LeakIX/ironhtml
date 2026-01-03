@@ -9,7 +9,7 @@
 //! ## Example
 //!
 //! ```rust
-//! use html_attributes::{InputType, Target, Loading, Method};
+//! use html_attributes::{AttributeValue, InputType, Target, Loading, Method};
 //!
 //! // Use type-safe enums for attribute values
 //! let input_type = InputType::Email;
