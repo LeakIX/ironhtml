@@ -4922,7 +4922,7 @@ impl HtmlElement for Param {
 /// - `height`: Height of the SVG viewport
 /// - `viewBox`: Define coordinate system and aspect ratio
 /// - `preserveAspectRatio`: How to scale the viewBox
-/// - `xmlns`: XML namespace (usually "http://www.w3.org/2000/svg")
+/// - `xmlns`: XML namespace (usually `"http://www.w3.org/2000/svg"`)
 /// - Plus all SVG-specific attributes
 ///
 /// # Example
@@ -5005,7 +5005,7 @@ impl PalpableContent for Svg {}
 /// # Key Attributes
 ///
 /// - `display`: "block" or "inline" (controls display mode)
-/// - `xmlns`: XML namespace (usually "http://www.w3.org/1998/Math/MathML")
+/// - `xmlns`: XML namespace (usually `"http://www.w3.org/1998/Math/MathML"`)
 /// - Plus all MathML-specific attributes
 ///
 /// # Example
