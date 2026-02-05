@@ -3868,7 +3868,86 @@ impl PhrasingContent for Wbr {}
 // Image and Multimedia
 // =============================================================================
 
-/// The `<img>` element - image.
+/// The `<img>` element - embeds an image into the document.
+///
+/// # Purpose
+///
+/// The `<img>` element represents an image and its fallback text. It is used to embed
+/// graphics, photographs, illustrations, diagrams, and other visual content into web pages.
+/// Images are loaded asynchronously and become part of the document flow.
+///
+/// # Content Categories
+///
+/// - Flow Content
+/// - Phrasing Content
+/// - Embedded Content
+/// - Palpable Content
+/// - If with `usemap` attribute: Interactive Content
+///
+/// # Permitted Content Model
+///
+/// - None (void element)
+///
+/// # Common Use Cases
+///
+/// - Displaying photographs and illustrations
+/// - Showing logos and branding elements
+/// - Embedding diagrams and infographics
+/// - Creating image-based navigation elements
+/// - Displaying user avatars and profile pictures
+///
+/// # Key Attributes
+///
+/// - `src`: URL of the image (required)
+/// - `alt`: Alternative text description (required for accessibility)
+/// - `width`: Intrinsic width in pixels
+/// - `height`: Intrinsic height in pixels
+/// - `loading`: Lazy loading behavior ("lazy" or "eager")
+/// - `decoding`: Image decoding hint ("sync", "async", or "auto")
+/// - `srcset`: Responsive image sources for different resolutions
+/// - `sizes`: Media conditions for responsive images
+/// - `crossorigin`: CORS settings for image fetching
+/// - `usemap`: Associates image with a `<map>` element
+/// - `ismap`: Indicates server-side image map
+/// - `referrerpolicy`: Referrer policy for image requests
+/// - `fetchpriority`: Hint for relative fetch priority
+///
+/// # Example
+///
+/// ```html
+/// <!-- Basic image -->
+/// <img src="/images/logo.png" alt="Company Logo" width="200" height="100">
+///
+/// <!-- Responsive image with srcset -->
+/// <img src="/images/photo.jpg"
+///      srcset="/images/photo-320w.jpg 320w,
+///              /images/photo-640w.jpg 640w,
+///              /images/photo-1024w.jpg 1024w"
+///      sizes="(max-width: 320px) 280px,
+///             (max-width: 640px) 600px,
+///             1000px"
+///      alt="Scenic landscape photograph">
+///
+/// <!-- Lazy-loaded image -->
+/// <img src="/images/hero.jpg" alt="Hero banner" loading="lazy">
+///
+/// <!-- Image with decorative purpose -->
+/// <img src="/images/decorative-divider.png" alt="" role="presentation">
+/// ```
+///
+/// # Accessibility
+///
+/// - Always provide meaningful `alt` text describing the image content
+/// - Use empty `alt=""` for decorative images
+/// - Ensure alt text is concise yet descriptive (typically under 150 characters)
+/// - Don't use phrases like "image of" or "picture of" in alt text
+/// - For complex images (charts, diagrams), consider using `<figure>` with `<figcaption>`
+/// - Ensure sufficient color contrast for images containing text
+/// - Provide text alternatives for informational images
+///
+/// # WHATWG Specification
+///
+/// - [4.8.3 The img element](https://html.spec.whatwg.org/multipage/embedded-content.html#the-img-element)
 pub struct Img;
 impl HtmlElement for Img {
     const TAG: &'static str = "img";
@@ -3879,7 +3958,75 @@ impl PhrasingContent for Img {}
 impl EmbeddedContent for Img {}
 impl PalpableContent for Img {}
 
-/// The `<picture>` element - responsive images.
+/// The `<picture>` element - contains multiple image sources for responsive images.
+///
+/// # Purpose
+///
+/// The `<picture>` element provides a container for zero or more `<source>` elements and one
+/// `<img>` element to offer alternative versions of an image for different display/device
+/// scenarios. It enables art direction and format-based image selection, going beyond simple
+/// resolution switching.
+///
+/// # Content Categories
+///
+/// - Flow Content
+/// - Phrasing Content
+/// - Embedded Content
+/// - Palpable Content
+///
+/// # Permitted Content Model
+///
+/// - Zero or more `<source>` elements
+/// - Followed by one `<img>` element
+/// - Optionally intermixed with script-supporting elements
+///
+/// # Common Use Cases
+///
+/// - Art direction (different crops or compositions for different viewport sizes)
+/// - Serving modern image formats with fallbacks (WebP, AVIF with JPEG fallback)
+/// - Resolution switching based on device pixel ratio
+/// - Bandwidth optimization by serving different image sizes
+/// - Responsive design with different aspect ratios
+///
+/// # Key Attributes
+///
+/// - Global attributes only (attributes are primarily on child `<source>` and `<img>` elements)
+///
+/// # Example
+///
+/// ```html
+/// <!-- Art direction: different images for different viewport sizes -->
+/// <picture>
+///   <source media="(min-width: 1024px)" srcset="/images/hero-wide.jpg">
+///   <source media="(min-width: 768px)" srcset="/images/hero-medium.jpg">
+///   <img src="/images/hero-narrow.jpg" alt="Hero image">
+/// </picture>
+///
+/// <!-- Format selection: modern formats with fallback -->
+/// <picture>
+///   <source srcset="/images/photo.avif" type="image/avif">
+///   <source srcset="/images/photo.webp" type="image/webp">
+///   <img src="/images/photo.jpg" alt="Photograph">
+/// </picture>
+///
+/// <!-- Combining media queries and formats -->
+/// <picture>
+///   <source media="(min-width: 768px)" srcset="/images/large.webp" type="image/webp">
+///   <source media="(min-width: 768px)" srcset="/images/large.jpg">
+///   <source srcset="/images/small.webp" type="image/webp">
+///   <img src="/images/small.jpg" alt="Responsive image">
+/// </picture>
+/// ```
+///
+/// # Accessibility
+///
+/// - The `alt` attribute should be on the `<img>` element, not `<picture>`
+/// - Ensure all image variations convey the same essential information
+/// - Test that fallback images are appropriate when sources don't match
+///
+/// # WHATWG Specification
+///
+/// - [4.8.1 The picture element](https://html.spec.whatwg.org/multipage/embedded-content.html#the-picture-element)
 pub struct Picture;
 impl HtmlElement for Picture {
     const TAG: &'static str = "picture";
@@ -3889,14 +4036,161 @@ impl PhrasingContent for Picture {}
 impl EmbeddedContent for Picture {}
 impl PalpableContent for Picture {}
 
-/// The `<source>` element - media source.
+/// The `<source>` element - specifies media resources for `<picture>`, `<audio>`, and `<video>`.
+///
+/// # Purpose
+///
+/// The `<source>` element specifies multiple media resources for `<picture>`, `<audio>`, or
+/// `<video>` elements. The browser selects the most appropriate source based on media queries,
+/// format support, and other conditions. It enables responsive media delivery and format fallbacks.
+///
+/// # Content Categories
+///
+/// - None (used only within specific parent elements)
+///
+/// # Permitted Content Model
+///
+/// - None (void element)
+///
+/// # Common Use Cases
+///
+/// - Providing multiple video formats for cross-browser compatibility
+/// - Offering different audio quality levels or formats
+/// - Specifying image sources for different screen sizes in `<picture>`
+/// - Delivering modern media formats with legacy fallbacks
+/// - Bandwidth optimization with multiple quality levels
+///
+/// # Key Attributes
+///
+/// - `src`: URL of the media resource (for `<audio>` and `<video>`)
+/// - `srcset`: Image URLs for responsive images (for `<picture>`)
+/// - `type`: MIME type of the resource
+/// - `media`: Media query for when this source applies
+/// - `sizes`: Image sizes for different viewport widths (for `<picture>`)
+/// - `width`: Intrinsic width for image sources
+/// - `height`: Intrinsic height for image sources
+///
+/// # Example
+///
+/// ```html
+/// <!-- Video with multiple formats -->
+/// <video controls>
+///   <source src="/video/movie.webm" type="video/webm">
+///   <source src="/video/movie.mp4" type="video/mp4">
+///   Your browser doesn't support the video element.
+/// </video>
+///
+/// <!-- Audio with quality options -->
+/// <audio controls>
+///   <source src="/audio/music.opus" type="audio/opus">
+///   <source src="/audio/music.ogg" type="audio/ogg">
+///   <source src="/audio/music.mp3" type="audio/mpeg">
+/// </audio>
+///
+/// <!-- Responsive images in picture element -->
+/// <picture>
+///   <source media="(min-width: 1200px)" srcset="/images/xl.jpg">
+///   <source media="(min-width: 768px)" srcset="/images/lg.jpg">
+///   <source srcset="/images/sm.jpg">
+///   <img src="/images/fallback.jpg" alt="Description">
+/// </picture>
+///
+/// <!-- Modern image formats with type hints -->
+/// <picture>
+///   <source srcset="/images/photo.avif" type="image/avif">
+///   <source srcset="/images/photo.webp" type="image/webp">
+///   <img src="/images/photo.jpg" alt="Photo">
+/// </picture>
+/// ```
+///
+/// # WHATWG Specification
+///
+/// - [4.8.2 The source element](https://html.spec.whatwg.org/multipage/embedded-content.html#the-source-element)
 pub struct Source;
 impl HtmlElement for Source {
     const TAG: &'static str = "source";
     const VOID: bool = true;
 }
 
-/// The `<audio>` element - audio content.
+/// The `<audio>` element - embeds sound content into documents.
+///
+/// # Purpose
+///
+/// The `<audio>` element is used to embed audio content in documents. It may contain one or
+/// more audio sources using nested `<source>` elements or the `src` attribute. The browser
+/// will choose the most suitable source. It provides built-in playback controls and APIs for
+/// programmatic control.
+///
+/// # Content Categories
+///
+/// - Flow Content
+/// - Phrasing Content
+/// - Embedded Content
+/// - If with `controls` attribute: Interactive Content
+/// - Palpable Content
+///
+/// # Permitted Content Model
+///
+/// - Zero or more `<source>` elements
+/// - Zero or more `<track>` elements
+/// - Transparent content (fallback for browsers without audio support)
+/// - No media elements among descendants
+///
+/// # Common Use Cases
+///
+/// - Music players and playlists
+/// - Podcast players and audio articles
+/// - Sound effects for interactive elements
+/// - Audio feedback for user actions
+/// - Background music or ambient sound
+///
+/// # Key Attributes
+///
+/// - `src`: URL of the audio file
+/// - `controls`: Show playback controls
+/// - `autoplay`: Automatically start playback (use with caution)
+/// - `loop`: Loop the audio
+/// - `muted`: Mute audio by default
+/// - `preload`: Hint for loading strategy ("none", "metadata", "auto")
+/// - `crossorigin`: CORS settings for audio fetching
+/// - `volume`: Initial volume (0.0 to 1.0, set via JavaScript)
+///
+/// # Example
+///
+/// ```html
+/// <!-- Basic audio player -->
+/// <audio src="/audio/music.mp3" controls>
+///   Your browser doesn't support the audio element.
+/// </audio>
+///
+/// <!-- Multiple format sources -->
+/// <audio controls>
+///   <source src="/audio/podcast.opus" type="audio/opus">
+///   <source src="/audio/podcast.ogg" type="audio/ogg; codecs=vorbis">
+///   <source src="/audio/podcast.mp3" type="audio/mpeg">
+///   <p>Your browser doesn't support HTML5 audio. <a href="/audio/podcast.mp3">Download</a></p>
+/// </audio>
+///
+/// <!-- Looping background audio -->
+/// <audio src="/audio/ambient.mp3" loop muted autoplay>
+/// </audio>
+///
+/// <!-- Audio with preloading control -->
+/// <audio src="/audio/effect.mp3" preload="none" id="sound-effect">
+/// </audio>
+/// ```
+///
+/// # Accessibility
+///
+/// - Provide transcripts for audio-only content
+/// - Use captions/transcripts for important information conveyed via audio
+/// - Don't use `autoplay` with sound, as it can be disruptive
+/// - Ensure playback controls are keyboard accessible
+/// - Consider users with hearing impairments
+///
+/// # WHATWG Specification
+///
+/// - [4.8.9 The audio element](https://html.spec.whatwg.org/multipage/media.html#the-audio-element)
 pub struct Audio;
 impl HtmlElement for Audio {
     const TAG: &'static str = "audio";
@@ -3906,7 +4200,92 @@ impl PhrasingContent for Audio {}
 impl EmbeddedContent for Audio {}
 impl PalpableContent for Audio {}
 
-/// The `<video>` element - video content.
+/// The `<video>` element - embeds video content into documents.
+///
+/// # Purpose
+///
+/// The `<video>` element embeds video content in documents. It may contain multiple video
+/// sources via `<source>` elements or use the `src` attribute. Provides native playback
+/// controls, poster images, and comprehensive JavaScript APIs for media control and monitoring.
+///
+/// # Content Categories
+///
+/// - Flow Content
+/// - Phrasing Content
+/// - Embedded Content
+/// - Interactive Content
+/// - Palpable Content
+///
+/// # Permitted Content Model
+///
+/// - Zero or more `<source>` elements
+/// - Zero or more `<track>` elements
+/// - Transparent content (fallback for browsers without video support)
+/// - No media elements among descendants
+///
+/// # Common Use Cases
+///
+/// - Embedding tutorial and educational videos
+/// - Product demonstrations and marketing videos
+/// - Video backgrounds for hero sections
+/// - Live streaming and recorded broadcasts
+/// - Video conferencing and communication
+///
+/// # Key Attributes
+///
+/// - `src`: URL of the video file
+/// - `controls`: Display video controls
+/// - `autoplay`: Automatically start playback
+/// - `loop`: Loop the video
+/// - `muted`: Mute audio by default
+/// - `poster`: URL of image to show before playback
+/// - `preload`: Loading strategy ("none", "metadata", "auto")
+/// - `width`: Display width in CSS pixels
+/// - `height`: Display height in CSS pixels
+/// - `playsinline`: Play inline on mobile devices
+/// - `crossorigin`: CORS settings for video fetching
+///
+/// # Example
+///
+/// ```html
+/// <!-- Basic video with controls -->
+/// <video src="/videos/tutorial.mp4" controls width="640" height="360">
+///   Your browser doesn't support the video element.
+/// </video>
+///
+/// <!-- Multiple sources with poster -->
+/// <video controls width="800" height="450" poster="/images/poster.jpg">
+///   <source src="/videos/movie.webm" type="video/webm">
+///   <source src="/videos/movie.mp4" type="video/mp4">
+///   <track src="/captions/en.vtt" kind="subtitles" srclang="en" label="English">
+///   <p>Your browser doesn't support HTML5 video. <a href="/videos/movie.mp4">Download</a></p>
+/// </video>
+///
+/// <!-- Autoplay muted background video -->
+/// <video autoplay loop muted playsinline class="bg-video">
+///   <source src="/videos/background.webm" type="video/webm">
+///   <source src="/videos/background.mp4" type="video/mp4">
+/// </video>
+///
+/// <!-- Video with lazy loading -->
+/// <video controls preload="none" poster="/images/video-thumb.jpg">
+///   <source src="/videos/demo.mp4" type="video/mp4">
+/// </video>
+/// ```
+///
+/// # Accessibility
+///
+/// - Provide captions for deaf and hard-of-hearing users
+/// - Include audio descriptions for blind and low-vision users
+/// - Ensure video controls are keyboard accessible
+/// - Provide transcripts for video content
+/// - Use descriptive poster images
+/// - Avoid autoplay with sound (can be disorienting)
+/// - Ensure sufficient contrast for controls
+///
+/// # WHATWG Specification
+///
+/// - [4.8.9 The video element](https://html.spec.whatwg.org/multipage/media.html#the-video-element)
 pub struct Video;
 impl HtmlElement for Video {
     const TAG: &'static str = "video";
@@ -3917,14 +4296,152 @@ impl EmbeddedContent for Video {}
 impl InteractiveContent for Video {}
 impl PalpableContent for Video {}
 
-/// The `<track>` element - timed text track.
+/// The `<track>` element - specifies timed text tracks for media elements.
+///
+/// # Purpose
+///
+/// The `<track>` element provides text tracks for `<audio>` and `<video>` elements. These
+/// tracks include subtitles, captions, descriptions, chapters, and metadata. Tracks are in
+/// WebVTT format and can be displayed or processed programmatically to enhance media accessibility
+/// and user experience.
+///
+/// # Content Categories
+///
+/// - None (used only within `<audio>` and `<video>` elements)
+///
+/// # Permitted Content Model
+///
+/// - None (void element)
+///
+/// # Common Use Cases
+///
+/// - Subtitles for foreign language translation
+/// - Closed captions for deaf and hard-of-hearing users
+/// - Audio descriptions for blind and low-vision users
+/// - Chapter markers for video navigation
+/// - Metadata tracks for programmatic access
+///
+/// # Key Attributes
+///
+/// - `kind`: Type of track ("subtitles", "captions", "descriptions", "chapters", "metadata")
+/// - `src`: URL of the track file (WebVTT format, required)
+/// - `srclang`: Language of the track text (required for subtitles)
+/// - `label`: User-readable title for the track
+/// - `default`: Enable this track by default
+///
+/// # Example
+///
+/// ```html
+/// <!-- Video with multiple subtitle tracks -->
+/// <video controls>
+///   <source src="/videos/movie.mp4" type="video/mp4">
+///   <track kind="subtitles" src="/subs/en.vtt" srclang="en" label="English" default>
+///   <track kind="subtitles" src="/subs/es.vtt" srclang="es" label="Español">
+///   <track kind="subtitles" src="/subs/fr.vtt" srclang="fr" label="Français">
+/// </video>
+///
+/// <!-- Video with captions and descriptions -->
+/// <video controls>
+///   <source src="/videos/tutorial.mp4" type="video/mp4">
+///   <track kind="captions" src="/captions/en.vtt" srclang="en" label="English Captions" default>
+///   <track kind="descriptions" src="/descriptions/en.vtt" srclang="en" label="Audio Descriptions">
+///   <track kind="chapters" src="/chapters/en.vtt" srclang="en" label="Chapters">
+/// </video>
+///
+/// <!-- Audio with chapter markers -->
+/// <audio controls>
+///   <source src="/audio/podcast.mp3" type="audio/mpeg">
+///   <track kind="chapters" src="/chapters/podcast.vtt" srclang="en" label="Episode Chapters">
+///   <track kind="metadata" src="/metadata/podcast.vtt">
+/// </audio>
+/// ```
+///
+/// # Accessibility
+///
+/// - Use `kind="captions"` for accessibility (includes sound effects and speaker identification)
+/// - Use `kind="subtitles"` for translation only
+/// - Provide descriptions for visual content that isn't conveyed through audio
+/// - Ensure track files are in proper WebVTT format
+/// - Set appropriate default tracks based on user preferences
+///
+/// # WHATWG Specification
+///
+/// - [4.8.11 The track element](https://html.spec.whatwg.org/multipage/media.html#the-track-element)
 pub struct Track;
 impl HtmlElement for Track {
     const TAG: &'static str = "track";
     const VOID: bool = true;
 }
 
-/// The `<map>` element - image map.
+/// The `<map>` element - defines an image map with clickable areas.
+///
+/// # Purpose
+///
+/// The `<map>` element defines an image map - a collection of clickable areas on an image.
+/// Used with the `<area>` element to create hotspots on images that link to different
+/// destinations. Images reference maps using the `usemap` attribute.
+///
+/// # Content Categories
+///
+/// - Flow Content
+/// - Phrasing Content
+/// - Palpable Content
+///
+/// # Permitted Content Model
+///
+/// - Transparent content (typically contains `<area>` elements)
+///
+/// # Common Use Cases
+///
+/// - Interactive geographic maps with region links
+/// - Architectural floor plans with clickable rooms
+/// - Organizational charts with clickable positions
+/// - Product images with clickable component areas
+/// - Educational diagrams with interactive sections
+///
+/// # Key Attributes
+///
+/// - `name`: Name referenced by `<img>` element's `usemap` attribute (required)
+///
+/// # Example
+///
+/// ```html
+/// <!-- Image map for a world map -->
+/// <img src="/images/world-map.jpg" alt="World Map" usemap="#world">
+/// <map name="world">
+///   <area shape="rect" coords="0,0,100,100" href="/regions/north-america" alt="North America">
+///   <area shape="rect" coords="100,0,200,100" href="/regions/europe" alt="Europe">
+///   <area shape="circle" coords="150,150,50" href="/regions/asia" alt="Asia">
+///   <area shape="poly" coords="50,200,100,250,50,300" href="/regions/africa" alt="Africa">
+/// </map>
+///
+/// <!-- Interactive floor plan -->
+/// <img src="/images/floor-plan.png" alt="Office Floor Plan" usemap="#office-map">
+/// <map name="office-map">
+///   <area shape="rect" coords="10,10,110,60" href="/rooms/conference-a" alt="Conference Room A">
+///   <area shape="rect" coords="120,10,220,60" href="/rooms/conference-b" alt="Conference Room B">
+///   <area shape="rect" coords="10,70,110,120" href="/rooms/kitchen" alt="Kitchen">
+/// </map>
+///
+/// <!-- Product feature map -->
+/// <img src="/images/product.jpg" alt="Product Features" usemap="#features">
+/// <map name="features">
+///   <area shape="circle" coords="100,100,30" href="#feature-1" alt="Feature 1: Display">
+///   <area shape="circle" coords="200,100,30" href="#feature-2" alt="Feature 2: Controls">
+/// </map>
+/// ```
+///
+/// # Accessibility
+///
+/// - Provide meaningful `alt` text for each `<area>` element
+/// - Ensure keyboard navigation is available for all areas
+/// - Consider providing a text-based alternative navigation
+/// - Test with screen readers to ensure areas are announced properly
+/// - Ensure sufficient clickable area size for touch interfaces
+///
+/// # WHATWG Specification
+///
+/// - [4.8.13 The map element](https://html.spec.whatwg.org/multipage/image-maps.html#the-map-element)
 pub struct Map;
 impl HtmlElement for Map {
     const TAG: &'static str = "map";
@@ -3933,7 +4450,81 @@ impl FlowContent for Map {}
 impl PhrasingContent for Map {}
 impl PalpableContent for Map {}
 
-/// The `<area>` element - image map area.
+/// The `<area>` element - defines a clickable area within an image map.
+///
+/// # Purpose
+///
+/// The `<area>` element defines a hot-spot region on an image map and specifies the
+/// hyperlink target for that region. Must be used as a descendant of a `<map>` element.
+/// Supports rectangular, circular, and polygonal shapes.
+///
+/// # Content Categories
+///
+/// - Flow Content
+/// - Phrasing Content
+///
+/// # Permitted Content Model
+///
+/// - None (void element)
+///
+/// # Common Use Cases
+///
+/// - Creating clickable regions on geographic maps
+/// - Interactive product diagrams with feature links
+/// - Organizational charts with clickable positions
+/// - Architectural plans with room navigation
+/// - Educational diagrams with section links
+///
+/// # Key Attributes
+///
+/// - `shape`: Shape of the area ("rect", "circle", "poly", "default")
+/// - `coords`: Coordinates defining the shape
+/// - `href`: URL the area links to
+/// - `alt`: Alternative text for the area (required)
+/// - `target`: Browsing context for navigation
+/// - `download`: Download the resource instead of navigating
+/// - `ping`: URLs to ping when the link is followed
+/// - `rel`: Relationship between current document and target
+/// - `referrerpolicy`: Referrer policy for navigation
+///
+/// # Example
+///
+/// ```html
+/// <!-- Rectangular areas -->
+/// <map name="nav-map">
+///   <area shape="rect" coords="0,0,100,50" href="/home" alt="Home">
+///   <area shape="rect" coords="100,0,200,50" href="/about" alt="About">
+///   <area shape="rect" coords="200,0,300,50" href="/contact" alt="Contact">
+/// </map>
+///
+/// <!-- Circular area -->
+/// <map name="button-map">
+///   <area shape="circle" coords="150,150,75" href="/action" alt="Click to activate">
+/// </map>
+///
+/// <!-- Polygon area (triangle) -->
+/// <map name="complex-map">
+///   <area shape="poly" coords="100,50,150,150,50,150" href="/info" alt="Information">
+/// </map>
+///
+/// <!-- Default area (fallback for unmapped regions) -->
+/// <map name="diagram">
+///   <area shape="rect" coords="10,10,90,90" href="/section-1" alt="Section 1">
+///   <area shape="default" href="/overview" alt="General overview">
+/// </map>
+/// ```
+///
+/// # Accessibility
+///
+/// - Always provide meaningful `alt` text describing the area's purpose
+/// - Ensure `alt` text is concise and descriptive
+/// - Make sure areas are large enough for touch interaction (minimum 44x44 pixels)
+/// - Provide keyboard-accessible alternatives to image maps when possible
+/// - Consider using semantic HTML links instead of image maps for better accessibility
+///
+/// # WHATWG Specification
+///
+/// - [4.8.14 The area element](https://html.spec.whatwg.org/multipage/image-maps.html#the-area-element)
 pub struct Area;
 impl HtmlElement for Area {
     const TAG: &'static str = "area";
@@ -3946,7 +4537,92 @@ impl PhrasingContent for Area {}
 // Embedded Content
 // =============================================================================
 
-/// The `<iframe>` element - nested browsing context.
+/// The `<iframe>` element - embeds another HTML page within the current page.
+///
+/// # Purpose
+///
+/// The `<iframe>` element represents a nested browsing context, embedding another HTML page
+/// into the current document. Creates an isolated environment for displaying external content,
+/// third-party widgets, or sandboxed applications with controlled permissions and communication.
+///
+/// # Content Categories
+///
+/// - Flow Content
+/// - Phrasing Content
+/// - Embedded Content
+/// - Interactive Content
+/// - Palpable Content
+///
+/// # Permitted Content Model
+///
+/// - Nothing (fallback text for browsers that don't support iframes)
+///
+/// # Common Use Cases
+///
+/// - Embedding third-party content (maps, videos, social media)
+/// - Displaying external widgets and plugins
+/// - Creating sandboxed environments for untrusted content
+/// - Loading advertisements in isolated contexts
+/// - Embedding interactive tools and applications
+///
+/// # Key Attributes
+///
+/// - `src`: URL of the page to embed
+/// - `srcdoc`: Inline HTML content to display
+/// - `name`: Name for targeting the iframe
+/// - `sandbox`: Security restrictions (empty or space-separated tokens)
+/// - `allow`: Permissions policy (features the iframe can use)
+/// - `width`: Width in CSS pixels
+/// - `height`: Height in CSS pixels
+/// - `loading`: Lazy loading ("lazy" or "eager")
+/// - `referrerpolicy`: Referrer policy for requests
+/// - `allowfullscreen`: Allow fullscreen mode
+/// - `allowpaymentrequest`: Allow Payment Request API
+///
+/// # Example
+///
+/// ```html
+/// <!-- Basic iframe embedding -->
+/// <iframe src="https://example.com/widget" width="600" height="400">
+///   Your browser doesn't support iframes.
+/// </iframe>
+///
+/// <!-- Sandboxed iframe with restrictions -->
+/// <iframe src="/untrusted.html"
+///         sandbox="allow-scripts allow-same-origin"
+///         width="100%" height="300">
+/// </iframe>
+///
+/// <!-- Lazy-loaded iframe -->
+/// <iframe src="https://www.youtube.com/embed/VIDEO_ID"
+///         width="560" height="315"
+///         loading="lazy"
+///         allowfullscreen>
+/// </iframe>
+///
+/// <!-- Iframe with inline content -->
+/// <iframe srcdoc="<h1>Hello World</h1><p>This is inline HTML content.</p>"
+///         width="400" height="200">
+/// </iframe>
+///
+/// <!-- Iframe with permissions policy -->
+/// <iframe src="/map.html"
+///         allow="geolocation 'self'; camera 'none'"
+///         width="800" height="600">
+/// </iframe>
+/// ```
+///
+/// # Accessibility
+///
+/// - Provide a descriptive `title` attribute for screen readers
+/// - Ensure iframe content is keyboard accessible
+/// - Consider whether iframe content should be directly in the page instead
+/// - Test that embedded content meets accessibility standards
+/// - Ensure iframe has meaningful fallback text
+///
+/// # WHATWG Specification
+///
+/// - [4.8.5 The iframe element](https://html.spec.whatwg.org/multipage/iframe-embed-object.html#the-iframe-element)
 pub struct Iframe;
 impl HtmlElement for Iframe {
     const TAG: &'static str = "iframe";
@@ -3957,7 +4633,81 @@ impl EmbeddedContent for Iframe {}
 impl InteractiveContent for Iframe {}
 impl PalpableContent for Iframe {}
 
-/// The `<embed>` element - external content.
+/// The `<embed>` element - embeds external content at the specified point.
+///
+/// # Purpose
+///
+/// The `<embed>` element represents an integration point for external application or
+/// interactive content, typically handled by a browser plugin. While historically used
+/// for Flash and other plugins, it's now primarily used for embedding PDFs and other
+/// plugin-based content. Modern alternatives like `<video>`, `<audio>`, and `<iframe>`
+/// are preferred when applicable.
+///
+/// # Content Categories
+///
+/// - Flow Content
+/// - Phrasing Content
+/// - Embedded Content
+/// - Interactive Content
+/// - Palpable Content
+///
+/// # Permitted Content Model
+///
+/// - None (void element)
+///
+/// # Common Use Cases
+///
+/// - Embedding PDF documents inline
+/// - Displaying plugin-based content (legacy)
+/// - Embedding specialized media types
+/// - Integration with native applications
+/// - Displaying Flash content (legacy, deprecated)
+///
+/// # Key Attributes
+///
+/// - `src`: URL of the resource to embed (required)
+/// - `type`: MIME type of the embedded content
+/// - `width`: Width in CSS pixels
+/// - `height`: Height in CSS pixels
+/// - Any custom attributes for the plugin
+///
+/// # Example
+///
+/// ```html
+/// <!-- Embedding a PDF document -->
+/// <embed src="/documents/manual.pdf"
+///        type="application/pdf"
+///        width="800"
+///        height="600">
+///
+/// <!-- Embedding with explicit dimensions -->
+/// <embed src="/media/content.swf"
+///        type="application/x-shockwave-flash"
+///        width="640"
+///        height="480">
+///
+/// <!-- Simple embed without type -->
+/// <embed src="/files/document.pdf" width="100%" height="500">
+///
+/// <!-- Embed with custom parameters -->
+/// <embed src="/plugin/app.plugin"
+///        type="application/x-custom-plugin"
+///        width="400"
+///        height="300"
+///        quality="high">
+/// ```
+///
+/// # Accessibility
+///
+/// - Provide alternative content mechanisms when possible
+/// - Ensure embedded content is keyboard accessible
+/// - Consider using modern alternatives (`<iframe>`, `<video>`, `<audio>`)
+/// - Test with assistive technologies
+/// - Provide download links as fallback
+///
+/// # WHATWG Specification
+///
+/// - [4.8.6 The embed element](https://html.spec.whatwg.org/multipage/iframe-embed-object.html#the-embed-element)
 pub struct Embed;
 impl HtmlElement for Embed {
     const TAG: &'static str = "embed";
@@ -3969,7 +4719,97 @@ impl EmbeddedContent for Embed {}
 impl InteractiveContent for Embed {}
 impl PalpableContent for Embed {}
 
-/// The `<object>` element - external resource.
+/// The `<object>` element - embeds external resource as an object.
+///
+/// # Purpose
+///
+/// The `<object>` element represents an external resource, which can be treated as an image,
+/// nested browsing context, or resource to be handled by a plugin. It provides fallback
+/// content for when the object cannot be displayed. More flexible than `<embed>` with better
+/// fallback support, but modern elements like `<video>`, `<audio>`, and `<iframe>` are often
+/// more appropriate.
+///
+/// # Content Categories
+///
+/// - Flow Content
+/// - Phrasing Content
+/// - Embedded Content
+/// - If with `usemap` attribute: Interactive Content
+/// - Palpable Content
+///
+/// # Permitted Content Model
+///
+/// - Zero or more `<param>` elements
+/// - Followed by transparent content (fallback)
+///
+/// # Common Use Cases
+///
+/// - Embedding PDF documents with fallback
+/// - Displaying SVG images with fallback content
+/// - Plugin-based content with degradation path
+/// - Embedding Flash content with alternatives (legacy)
+/// - Nested browsing contexts with fallback options
+///
+/// # Key Attributes
+///
+/// - `data`: URL of the resource
+/// - `type`: MIME type of the resource
+/// - `name`: Name for form submission or scripting
+/// - `width`: Width in CSS pixels
+/// - `height`: Height in CSS pixels
+/// - `usemap`: Associates with an image map
+/// - `form`: Associates with a form element
+/// - `typemustmatch`: Type attribute must match resource's type
+///
+/// # Example
+///
+/// ```html
+/// <!-- PDF with fallback link -->
+/// <object data="/documents/report.pdf"
+///         type="application/pdf"
+///         width="800"
+///         height="600">
+///   <p>Your browser doesn't support PDF viewing.
+///      <a href="/documents/report.pdf">Download the PDF</a></p>
+/// </object>
+///
+/// <!-- SVG with fallback image -->
+/// <object data="/images/diagram.svg"
+///         type="image/svg+xml"
+///         width="400"
+///         height="300">
+///   <img src="/images/diagram.png" alt="Diagram">
+/// </object>
+///
+/// <!-- Object with parameters -->
+/// <object data="/media/animation.swf"
+///         type="application/x-shockwave-flash"
+///         width="640"
+///         height="480">
+///   <param name="quality" value="high">
+///   <param name="autoplay" value="false">
+///   <p>Flash content requires the Adobe Flash Player.</p>
+/// </object>
+///
+/// <!-- Nested fallbacks -->
+/// <object data="/video/movie.mp4" type="video/mp4">
+///   <object data="/video/movie.ogv" type="video/ogg">
+///     <p>Your browser doesn't support the video. <a href="/video/movie.mp4">Download</a></p>
+///   </object>
+/// </object>
+/// ```
+///
+/// # Accessibility
+///
+/// - Provide meaningful fallback content
+/// - Ensure embedded content is accessible
+/// - Use `aria-label` or descriptive fallback text
+/// - Test with assistive technologies
+/// - Consider using semantic alternatives when available
+///
+/// # WHATWG Specification
+///
+/// - [4.8.7 The object element](https://html.spec.whatwg.org/multipage/iframe-embed-object.html#the-object-element)
 pub struct Object;
 impl HtmlElement for Object {
     const TAG: &'static str = "object";
@@ -3979,7 +4819,65 @@ impl PhrasingContent for Object {}
 impl EmbeddedContent for Object {}
 impl PalpableContent for Object {}
 
-/// The `<param>` element - object parameter.
+/// The `<param>` element - defines parameters for an `<object>` element.
+///
+/// # Purpose
+///
+/// The `<param>` element defines parameters that are passed to the plugin or application
+/// instantiated by an `<object>` element. Each parameter is specified as a name-value pair.
+/// Must be a child of an `<object>` element and appear before any fallback content.
+///
+/// # Content Categories
+///
+/// - None (used only within `<object>` elements)
+///
+/// # Permitted Content Model
+///
+/// - None (void element)
+///
+/// # Common Use Cases
+///
+/// - Passing configuration to Flash content
+/// - Setting plugin initialization parameters
+/// - Configuring embedded applications
+/// - Controlling playback settings
+/// - Specifying display or behavior options
+///
+/// # Key Attributes
+///
+/// - `name`: Name of the parameter (required)
+/// - `value`: Value of the parameter (required)
+///
+/// # Example
+///
+/// ```html
+/// <!-- Flash parameters -->
+/// <object data="/media/animation.swf" type="application/x-shockwave-flash">
+///   <param name="quality" value="high">
+///   <param name="wmode" value="transparent">
+///   <param name="allowfullscreen" value="true">
+///   <param name="flashvars" value="autoplay=false&volume=50">
+/// </object>
+///
+/// <!-- Plugin configuration -->
+/// <object data="/plugins/viewer.plugin" type="application/x-custom">
+///   <param name="autostart" value="false">
+///   <param name="volume" value="75">
+///   <param name="controls" value="true">
+/// </object>
+///
+/// <!-- Multiple parameters for video -->
+/// <object data="/media/video.mp4" type="video/mp4">
+///   <param name="autoplay" value="false">
+///   <param name="loop" value="false">
+///   <param name="controls" value="true">
+///   <p>Your browser doesn't support this video format.</p>
+/// </object>
+/// ```
+///
+/// # WHATWG Specification
+///
+/// - [4.8.8 The param element](https://html.spec.whatwg.org/multipage/iframe-embed-object.html#the-param-element)
 pub struct Param;
 impl HtmlElement for Param {
     const TAG: &'static str = "param";
@@ -3990,7 +4888,83 @@ impl HtmlElement for Param {
 // SVG and MathML
 // =============================================================================
 
-/// The `<svg>` element - SVG graphics.
+/// The `<svg>` element - embeds SVG (Scalable Vector Graphics) content.
+///
+/// # Purpose
+///
+/// The `<svg>` element is a container for SVG graphics. SVG is an XML-based vector image
+/// format for defining two-dimensional graphics with support for interactivity and animation.
+/// SVG images scale without loss of quality and can be styled with CSS and manipulated with
+/// JavaScript.
+///
+/// # Content Categories
+///
+/// - Flow Content
+/// - Phrasing Content
+/// - Embedded Content
+/// - Palpable Content
+///
+/// # Permitted Content Model
+///
+/// - SVG elements (follows SVG specification, not HTML)
+///
+/// # Common Use Cases
+///
+/// - Scalable icons and logos
+/// - Data visualizations and charts
+/// - Interactive graphics and diagrams
+/// - Animated illustrations
+/// - Responsive vector artwork
+///
+/// # Key Attributes
+///
+/// - `width`: Width of the SVG viewport
+/// - `height`: Height of the SVG viewport
+/// - `viewBox`: Define coordinate system and aspect ratio
+/// - `preserveAspectRatio`: How to scale the viewBox
+/// - `xmlns`: XML namespace (usually "http://www.w3.org/2000/svg")
+/// - Plus all SVG-specific attributes
+///
+/// # Example
+///
+/// ```html
+/// <!-- Simple SVG circle -->
+/// <svg width="100" height="100">
+///   <circle cx="50" cy="50" r="40" fill="blue" />
+/// </svg>
+///
+/// <!-- SVG with viewBox for responsive scaling -->
+/// <svg viewBox="0 0 200 200" width="100%" height="auto">
+///   <rect x="10" y="10" width="180" height="180" fill="lightblue" />
+///   <circle cx="100" cy="100" r="50" fill="red" />
+/// </svg>
+///
+/// <!-- Inline SVG icon -->
+/// <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+///   <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+///   <polyline points="9 22 9 12 15 12 15 22"></polyline>
+/// </svg>
+///
+/// <!-- SVG with accessibility -->
+/// <svg role="img" aria-labelledby="logo-title" width="200" height="100">
+///   <title id="logo-title">Company Logo</title>
+///   <rect x="0" y="0" width="200" height="100" fill="#333"/>
+///   <text x="100" y="55" text-anchor="middle" fill="white">LOGO</text>
+/// </svg>
+/// ```
+///
+/// # Accessibility
+///
+/// - Use `<title>` element inside SVG for accessible names
+/// - Add `role="img"` for decorative or meaningful graphics
+/// - Use `aria-labelledby` to reference title elements
+/// - Provide `<desc>` for longer descriptions
+/// - Use `aria-hidden="true"` for purely decorative SVGs
+/// - Ensure sufficient color contrast
+///
+/// # WHATWG Specification
+///
+/// - [4.8.16 SVG](https://html.spec.whatwg.org/multipage/embedded-content.html#svg-0)
 pub struct Svg;
 impl HtmlElement for Svg {
     const TAG: &'static str = "svg";
@@ -4000,7 +4974,106 @@ impl PhrasingContent for Svg {}
 impl EmbeddedContent for Svg {}
 impl PalpableContent for Svg {}
 
-/// The `<math>` element - MathML.
+/// The `<math>` element - embeds MathML (Mathematical Markup Language) content.
+///
+/// # Purpose
+///
+/// The `<math>` element is the top-level element for MathML content, used to embed
+/// mathematical expressions and equations in HTML documents. MathML provides semantic
+/// markup for mathematical notation, enabling proper rendering, accessibility, and
+/// computational manipulation of mathematical expressions.
+///
+/// # Content Categories
+///
+/// - Flow Content
+/// - Phrasing Content
+/// - Embedded Content
+/// - Palpable Content
+///
+/// # Permitted Content Model
+///
+/// - MathML elements (follows MathML specification, not HTML)
+///
+/// # Common Use Cases
+///
+/// - Displaying mathematical equations and formulas
+/// - Scientific and technical documentation
+/// - Educational materials with math content
+/// - Research papers and academic publications
+/// - Interactive math applications
+///
+/// # Key Attributes
+///
+/// - `display`: "block" or "inline" (controls display mode)
+/// - `xmlns`: XML namespace (usually "http://www.w3.org/1998/Math/MathML")
+/// - Plus all MathML-specific attributes
+///
+/// # Example
+///
+/// ```html
+/// <!-- Inline math: Pythagorean theorem -->
+/// <p>The Pythagorean theorem states that
+/// <math>
+///   <msup><mi>a</mi><mn>2</mn></msup>
+///   <mo>+</mo>
+///   <msup><mi>b</mi><mn>2</mn></msup>
+///   <mo>=</mo>
+///   <msup><mi>c</mi><mn>2</mn></msup>
+/// </math>
+/// </p>
+///
+/// <!-- Block math: Quadratic formula -->
+/// <math display="block">
+///   <mi>x</mi>
+///   <mo>=</mo>
+///   <mfrac>
+///     <mrow>
+///       <mo>−</mo><mi>b</mi>
+///       <mo>±</mo>
+///       <msqrt>
+///         <msup><mi>b</mi><mn>2</mn></msup>
+///         <mo>−</mo>
+///         <mn>4</mn><mi>a</mi><mi>c</mi>
+///       </msqrt>
+///     </mrow>
+///     <mrow>
+///       <mn>2</mn><mi>a</mi>
+///     </mrow>
+///   </mfrac>
+/// </math>
+///
+/// <!-- Fraction notation -->
+/// <math>
+///   <mfrac>
+///     <mn>1</mn>
+///     <mn>2</mn>
+///   </mfrac>
+/// </math>
+///
+/// <!-- Complex expression with matrix -->
+/// <math display="block">
+///   <mrow>
+///     <mo>[</mo>
+///     <mtable>
+///       <mtr><mtd><mn>1</mn></mtd><mtd><mn>2</mn></mtd></mtr>
+///       <mtr><mtd><mn>3</mn></mtd><mtd><mn>4</mn></mtd></mtr>
+///     </mtable>
+///     <mo>]</mo>
+///   </mrow>
+/// </math>
+/// ```
+///
+/// # Accessibility
+///
+/// - MathML provides built-in semantic accessibility
+/// - Screen readers can navigate and speak mathematical expressions
+/// - Consider providing text alternatives for complex equations
+/// - Ensure proper use of MathML semantic elements
+/// - Test with assistive technologies that support MathML
+///
+/// # WHATWG Specification
+///
+/// - [4.8.16 MathML](https://html.spec.whatwg.org/multipage/embedded-content.html#mathml)
 pub struct Math;
 impl HtmlElement for Math {
     const TAG: &'static str = "math";
@@ -4014,7 +5087,90 @@ impl PalpableContent for Math {}
 // Scripting
 // =============================================================================
 
-/// The `<script>` element - executable script.
+/// The `<script>` element - embeds or references executable code.
+///
+/// # Purpose
+///
+/// The `<script>` element embeds executable code or data, or references an external script
+/// file. Primarily used for JavaScript, it enables dynamic behavior, interactivity, and
+/// client-side functionality in web pages. Scripts can be inline or loaded from external files.
+///
+/// # Content Categories
+///
+/// - Metadata Content
+/// - Flow Content
+/// - Phrasing Content
+/// - Script-supporting Element
+///
+/// # Permitted Content Model
+///
+/// - If no `src` attribute: inline script content matching the `type`
+/// - If `src` attribute: no content or only comments and whitespace
+///
+/// # Common Use Cases
+///
+/// - Adding interactivity to web pages
+/// - Manipulating the DOM dynamically
+/// - Handling user events and input
+/// - Making AJAX requests and fetching data
+/// - Implementing client-side application logic
+///
+/// # Key Attributes
+///
+/// - `src`: URL of external script file
+/// - `type`: MIME type of the script (default: "text/javascript")
+/// - `async`: Execute asynchronously (for external scripts)
+/// - `defer`: Defer execution until document parsing is complete
+/// - `crossorigin`: CORS settings for script fetching
+/// - `integrity`: Subresource integrity hash for security
+/// - `referrerpolicy`: Referrer policy for script requests
+/// - `nomodule`: Execute only in browsers that don't support ES modules
+/// - `nonce`: Cryptographic nonce for Content Security Policy
+///
+/// # Example
+///
+/// ```html
+/// <!-- External script -->
+/// <script src="/js/app.js"></script>
+///
+/// <!-- External script with async loading -->
+/// <script src="/js/analytics.js" async></script>
+///
+/// <!-- External script with deferred execution -->
+/// <script src="/js/init.js" defer></script>
+///
+/// <!-- Inline script -->
+/// <script>
+///   console.log('Hello, World!');
+///   document.addEventListener('DOMContentLoaded', function() {
+///     // Initialize app
+///   });
+/// </script>
+///
+/// <!-- ES6 module -->
+/// <script type="module">
+///   import { init } from './modules/app.js';
+///   init();
+/// </script>
+///
+/// <!-- Script with integrity check -->
+/// <script src="https://cdn.example.com/library.js"
+///         integrity="sha384-ABC123..."
+///         crossorigin="anonymous"></script>
+///
+/// <!-- JSON-LD structured data -->
+/// <script type="application/ld+json">
+/// {
+///   "@context": "https://schema.org",
+///   "@type": "Organization",
+///   "name": "Example Company"
+/// }
+/// </script>
+/// ```
+///
+/// # WHATWG Specification
+///
+/// - [4.12.1 The script element](https://html.spec.whatwg.org/multipage/scripting.html#the-script-element)
 pub struct Script;
 impl HtmlElement for Script {
     const TAG: &'static str = "script";
@@ -4024,7 +5180,85 @@ impl FlowContent for Script {}
 impl PhrasingContent for Script {}
 impl ScriptSupporting for Script {}
 
-/// The `<noscript>` element - fallback content.
+/// The `<noscript>` element - defines fallback content for when scripts are disabled.
+///
+/// # Purpose
+///
+/// The `<noscript>` element provides fallback content for users who have disabled scripts
+/// or use browsers that don't support scripting. The content inside is only displayed when
+/// scripting is unavailable. Useful for providing alternative content, instructions, or
+/// degraded experiences.
+///
+/// # Content Categories
+///
+/// - Metadata Content (when used in `<head>`)
+/// - Flow Content (when used in `<body>`)
+/// - Phrasing Content (when used in `<body>`)
+///
+/// # Permitted Content Model
+///
+/// - When in `<head>`: `<link>`, `<style>`, and `<meta>` elements
+/// - When in `<body>`: Transparent content (with restrictions)
+///
+/// # Common Use Cases
+///
+/// - Providing messages about enabling JavaScript
+/// - Offering alternative navigation when scripts fail
+/// - Displaying static content as fallback
+/// - Showing contact information when forms require JavaScript
+/// - Providing download links for content requiring scripts
+///
+/// # Key Attributes
+///
+/// - Global attributes only
+///
+/// # Example
+///
+/// ```html
+/// <!-- Message in head for styles -->
+/// <head>
+///   <noscript>
+///     <style>
+///       .js-only { display: none; }
+///     </style>
+///   </noscript>
+/// </head>
+///
+/// <!-- Alternative content in body -->
+/// <noscript>
+///   <div class="alert">
+///     <p>This website requires JavaScript to function properly.</p>
+///     <p>Please enable JavaScript in your browser settings.</p>
+///   </div>
+/// </noscript>
+///
+/// <!-- Fallback for dynamic content -->
+/// <div id="app">
+///   <noscript>
+///     <p>Our interactive application requires JavaScript.</p>
+///     <p>You can still <a href="/static-version">view the static version</a>.</p>
+///   </noscript>
+/// </div>
+///
+/// <!-- Alternative form submission -->
+/// <form id="ajax-form" action="/submit" method="post">
+///   <noscript>
+///     <p>JavaScript is disabled. Please use the traditional form submission.</p>
+///     <input type="submit" value="Submit Form">
+///   </noscript>
+/// </form>
+/// ```
+///
+/// # Accessibility
+///
+/// - Ensure noscript content is meaningful and helpful
+/// - Provide clear instructions for enabling JavaScript if required
+/// - Consider whether your site should work without JavaScript
+/// - Test the experience with scripting disabled
+///
+/// # WHATWG Specification
+///
+/// - [4.12.2 The noscript element](https://html.spec.whatwg.org/multipage/scripting.html#the-noscript-element)
 pub struct Noscript;
 impl HtmlElement for Noscript {
     const TAG: &'static str = "noscript";
@@ -4033,7 +5267,85 @@ impl MetadataContent for Noscript {}
 impl FlowContent for Noscript {}
 impl PhrasingContent for Noscript {}
 
-/// The `<template>` element - template.
+/// The `<template>` element - holds HTML content that is not rendered immediately.
+///
+/// # Purpose
+///
+/// The `<template>` element is used to declare fragments of HTML that can be cloned and
+/// inserted into the document via JavaScript. Its content is not rendered when the page loads,
+/// making it ideal for client-side templating. The content is parsed but inert until activated.
+///
+/// # Content Categories
+///
+/// - Metadata Content
+/// - Flow Content
+/// - Phrasing Content
+/// - Script-supporting Element
+///
+/// # Permitted Content Model
+///
+/// - Anything (content is inert and stored in a DocumentFragment)
+///
+/// # Common Use Cases
+///
+/// - Client-side HTML templates
+/// - Repeating UI patterns (list items, cards, etc.)
+/// - Dynamic content generation
+/// - Web components and custom elements
+/// - Avoiding script-based string concatenation
+///
+/// # Key Attributes
+///
+/// - Global attributes only
+///
+/// # Example
+///
+/// ```html
+/// <!-- Template for list items -->
+/// <template id="item-template">
+///   <li class="item">
+///     <h3 class="item-title"></h3>
+///     <p class="item-description"></p>
+///   </li>
+/// </template>
+///
+/// <ul id="item-list"></ul>
+///
+/// <script>
+///   const template = document.getElementById('item-template');
+///   const list = document.getElementById('item-list');
+///   
+///   const clone = template.content.cloneNode(true);
+///   clone.querySelector('.item-title').textContent = 'Title';
+///   clone.querySelector('.item-description').textContent = 'Description';
+///   list.appendChild(clone);
+/// </script>
+///
+/// <!-- Card template -->
+/// <template id="card-template">
+///   <div class="card">
+///     <img class="card-image" src="" alt="">
+///     <div class="card-body">
+///       <h4 class="card-title"></h4>
+///       <p class="card-text"></p>
+///       <a class="card-link" href="#">Learn more</a>
+///     </div>
+///   </div>
+/// </template>
+///
+/// <!-- Table row template -->
+/// <template id="row-template">
+///   <tr>
+///     <td class="col-name"></td>
+///     <td class="col-email"></td>
+///     <td class="col-role"></td>
+///   </tr>
+/// </template>
+/// ```
+///
+/// # WHATWG Specification
+///
+/// - [4.12.3 The template element](https://html.spec.whatwg.org/multipage/scripting.html#the-template-element)
 pub struct Template;
 impl HtmlElement for Template {
     const TAG: &'static str = "template";
@@ -4043,7 +5355,79 @@ impl FlowContent for Template {}
 impl PhrasingContent for Template {}
 impl ScriptSupporting for Template {}
 
-/// The `<slot>` element - shadow DOM slot.
+/// The `<slot>` element - defines a placeholder in a web component's shadow DOM.
+///
+/// # Purpose
+///
+/// The `<slot>` element is part of the Web Components technology suite. It creates a
+/// placeholder inside a web component that users can fill with their own markup. Slots
+/// enable flexible, reusable components where content can be projected from the light DOM
+/// into the shadow DOM.
+///
+/// # Content Categories
+///
+/// - Flow Content
+/// - Phrasing Content
+///
+/// # Permitted Content Model
+///
+/// - Transparent content (fallback content when slot is not filled)
+///
+/// # Common Use Cases
+///
+/// - Creating reusable web components
+/// - Defining customizable areas in shadow DOM templates
+/// - Building flexible UI component libraries
+/// - Implementing compound components with multiple insertion points
+/// - Providing default fallback content for empty slots
+///
+/// # Key Attributes
+///
+/// - `name`: Named slot identifier (unnamed slots are default slots)
+///
+/// # Example
+///
+/// ```html
+/// <!-- Custom element template (in shadow DOM) -->
+/// <template id="card-template">
+///   <style>
+///     .card { border: 1px solid #ccc; padding: 1rem; }
+///     .card-header { font-weight: bold; }
+///   </style>
+///   <div class="card">
+///     <div class="card-header">
+///       <slot name="header">Default Header</slot>
+///     </div>
+///     <div class="card-body">
+///       <slot>Default content</slot>
+///     </div>
+///     <div class="card-footer">
+///       <slot name="footer"></slot>
+///     </div>
+///   </div>
+/// </template>
+///
+/// <!-- Usage of the custom element -->
+/// <my-card>
+///   <span slot="header">Custom Header</span>
+///   <p>This is the main content that goes into the default slot.</p>
+///   <small slot="footer">Footer text</small>
+/// </my-card>
+///
+/// <!-- Named slots with fallback -->
+/// <custom-dialog>
+///   <h2 slot="title">Confirmation</h2>
+///   <p>Are you sure you want to proceed?</p>
+///   <div slot="actions">
+///     <button>Cancel</button>
+///     <button>OK</button>
+///   </div>
+/// </custom-dialog>
+/// ```
+///
+/// # WHATWG Specification
+///
+/// - [4.12.4 The slot element](https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element)
 pub struct Slot;
 impl HtmlElement for Slot {
     const TAG: &'static str = "slot";
@@ -4051,7 +5435,79 @@ impl HtmlElement for Slot {
 impl FlowContent for Slot {}
 impl PhrasingContent for Slot {}
 
-/// The `<canvas>` element - graphics canvas.
+/// The `<canvas>` element - provides a bitmap drawing surface for graphics via JavaScript.
+///
+/// # Purpose
+///
+/// The `<canvas>` element provides a resolution-dependent bitmap canvas for drawing graphics
+/// via JavaScript and the Canvas API. It can be used for rendering graphs, game graphics,
+/// animations, photo composition, real-time video processing, and other visual images on the fly.
+///
+/// # Content Categories
+///
+/// - Flow Content
+/// - Phrasing Content
+/// - Embedded Content
+/// - Palpable Content
+///
+/// # Permitted Content Model
+///
+/// - Transparent content (fallback for browsers without canvas support)
+///
+/// # Common Use Cases
+///
+/// - 2D games and interactive animations
+/// - Data visualizations and charts
+/// - Image editing and manipulation
+/// - Real-time video effects and filters
+/// - Drawing tools and diagramming applications
+///
+/// # Key Attributes
+///
+/// - `width`: Width of the canvas in CSS pixels (default: 300)
+/// - `height`: Height of the canvas in CSS pixels (default: 150)
+///
+/// # Example
+///
+/// ```html
+/// <!-- Basic canvas -->
+/// <canvas id="myCanvas" width="800" height="600">
+///   Your browser doesn't support the canvas element.
+/// </canvas>
+/// <script>
+///   const ctx = document.getElementById('myCanvas').getContext('2d');
+///   ctx.fillStyle = 'blue';
+///   ctx.fillRect(10, 10, 100, 100);
+/// </script>
+///
+/// <!-- Canvas for charts -->
+/// <canvas id="chart" width="600" height="400" aria-label="Sales data chart">
+///   <p>Sales data: Q1: $100k, Q2: $150k, Q3: $175k, Q4: $200k</p>
+/// </canvas>
+///
+/// <!-- Game canvas -->
+/// <canvas id="gameCanvas" width="1024" height="768">
+///   <p>This game requires a browser with canvas support.</p>
+/// </canvas>
+///
+/// <!-- High DPI canvas -->
+/// <canvas id="hdCanvas" width="1600" height="1200" style="width: 800px; height: 600px;">
+///   Fallback content for accessibility.
+/// </canvas>
+/// ```
+///
+/// # Accessibility
+///
+/// - Provide meaningful fallback content describing what the canvas shows
+/// - Use `aria-label` or `aria-labelledby` to describe the canvas purpose
+/// - For interactive canvases, ensure keyboard accessibility
+/// - Consider providing alternative text-based representations of visual data
+/// - Use ARIA live regions to announce dynamic changes
+/// - Ensure canvas content has sufficient color contrast
+///
+/// # WHATWG Specification
+///
+/// - [4.12.5 The canvas element](https://html.spec.whatwg.org/multipage/canvas.html#the-canvas-element)
 pub struct Canvas;
 impl HtmlElement for Canvas {
     const TAG: &'static str = "canvas";
@@ -4065,7 +5521,131 @@ impl PalpableContent for Canvas {}
 // Table Content
 // =============================================================================
 
-/// The `<table>` element - table.
+/// The `<table>` element - represents tabular data in rows and columns.
+///
+/// # Purpose
+///
+/// The `<table>` element represents data with more than one dimension in the form of a table.
+/// Tables should be used for tabular data, not for layout purposes (use CSS for layout).
+/// Provides semantic structure for organizing related information in rows and columns.
+///
+/// # Content Categories
+///
+/// - Flow Content
+/// - Palpable Content
+///
+/// # Permitted Content Model
+///
+/// - Optional `<caption>` element
+/// - Zero or more `<colgroup>` elements
+/// - Optional `<thead>` element
+/// - Either: zero or more `<tbody>` elements, or one or more `<tr>` elements
+/// - Optional `<tfoot>` element
+///
+/// # Common Use Cases
+///
+/// - Displaying datasets and spreadsheet-like data
+/// - Pricing tables and comparison charts
+/// - Financial reports and statistics
+/// - Schedules and calendars
+/// - Product specifications and feature comparisons
+///
+/// # Key Attributes
+///
+/// - Global attributes only (older attributes like `border` are obsolete)
+///
+/// # Example
+///
+/// ```html
+/// <!-- Basic table -->
+/// <table>
+///   <thead>
+///     <tr>
+///       <th>Name</th>
+///       <th>Age</th>
+///       <th>City</th>
+///     </tr>
+///   </thead>
+///   <tbody>
+///     <tr>
+///       <td>Alice</td>
+///       <td>30</td>
+///       <td>New York</td>
+///     </tr>
+///     <tr>
+///       <td>Bob</td>
+///       <td>25</td>
+///       <td>Los Angeles</td>
+///     </tr>
+///   </tbody>
+/// </table>
+///
+/// <!-- Table with caption and footer -->
+/// <table>
+///   <caption>Quarterly Sales Report</caption>
+///   <thead>
+///     <tr>
+///       <th>Quarter</th>
+///       <th>Revenue</th>
+///       <th>Growth</th>
+///     </tr>
+///   </thead>
+///   <tbody>
+///     <tr>
+///       <td>Q1</td>
+///       <td>$100,000</td>
+///       <td>5%</td>
+///     </tr>
+///     <tr>
+///       <td>Q2</td>
+///       <td>$120,000</td>
+///       <td>20%</td>
+///     </tr>
+///   </tbody>
+///   <tfoot>
+///     <tr>
+///       <td>Total</td>
+///       <td>$220,000</td>
+///       <td>12.5%</td>
+///     </tr>
+///   </tfoot>
+/// </table>
+///
+/// <!-- Complex table with column groups -->
+/// <table>
+///   <colgroup>
+///     <col>
+///     <col span="2" class="financial">
+///   </colgroup>
+///   <thead>
+///     <tr>
+///       <th>Product</th>
+///       <th>Price</th>
+///       <th>Stock</th>
+///     </tr>
+///   </thead>
+///   <tbody>
+///     <tr>
+///       <td>Widget</td>
+///       <td>$10</td>
+///       <td>50</td>
+///     </tr>
+///   </tbody>
+/// </table>
+/// ```
+///
+/// # Accessibility
+///
+/// - Use `<th>` elements for headers with `scope` attribute
+/// - Provide a `<caption>` for table context
+/// - Use `headers` attribute for complex tables
+/// - Ensure proper header association for screen readers
+/// - Consider using `aria-describedby` for additional context
+/// - Make tables responsive for mobile devices
+///
+/// # WHATWG Specification
+///
+/// - [4.9.1 The table element](https://html.spec.whatwg.org/multipage/tables.html#the-table-element)
 pub struct Table;
 impl HtmlElement for Table {
     const TAG: &'static str = "table";
@@ -4073,56 +5653,968 @@ impl HtmlElement for Table {
 impl FlowContent for Table {}
 impl PalpableContent for Table {}
 
-/// The `<caption>` element - table caption.
+/// The `<caption>` element - represents the title of a table.
+///
+/// # Purpose
+///
+/// The `<caption>` element provides a title or caption for its parent `<table>`. It gives
+/// users context about the table's content before they start reading the data. Must be the
+/// first child of the table if present. Screen readers announce captions to help users
+/// understand table purpose.
+///
+/// # Content Categories
+///
+/// - None (only valid as first child of `<table>`)
+///
+/// # Permitted Content Model
+///
+/// - Flow content (excluding table elements)
+///
+/// # Common Use Cases
+///
+/// - Providing descriptive titles for data tables
+/// - Summarizing table content and purpose
+/// - Adding context for screen reader users
+/// - Labeling financial reports and statistics
+/// - Titling comparison and pricing tables
+///
+/// # Key Attributes
+///
+/// - Global attributes only
+///
+/// # Example
+///
+/// ```html
+/// <!-- Simple caption -->
+/// <table>
+///   <caption>Employee Directory</caption>
+///   <thead>
+///     <tr>
+///       <th>Name</th>
+///       <th>Department</th>
+///       <th>Email</th>
+///     </tr>
+///   </thead>
+///   <tbody>
+///     <tr>
+///       <td>John Doe</td>
+///       <td>Engineering</td>
+///       <td>john@example.com</td>
+///     </tr>
+///   </tbody>
+/// </table>
+///
+/// <!-- Caption with additional context -->
+/// <table>
+///   <caption>
+///     <strong>Quarterly Sales Data</strong>
+///     <br>
+///     <small>Fiscal Year 2024</small>
+///   </caption>
+///   <thead>
+///     <tr>
+///       <th>Quarter</th>
+///       <th>Sales</th>
+///     </tr>
+///   </thead>
+///   <tbody>
+///     <tr>
+///       <td>Q1</td>
+///       <td>$50,000</td>
+///     </tr>
+///   </tbody>
+/// </table>
+///
+/// <!-- Styled caption -->
+/// <table>
+///   <caption style="caption-side: bottom;">
+///     Table 1: Customer satisfaction ratings by region
+///   </caption>
+///   <thead>
+///     <tr>
+///       <th>Region</th>
+///       <th>Rating</th>
+///     </tr>
+///   </thead>
+///   <tbody>
+///     <tr>
+///       <td>North</td>
+///       <td>4.5/5</td>
+///     </tr>
+///   </tbody>
+/// </table>
+/// ```
+///
+/// # Accessibility
+///
+/// - Always provide a caption for data tables
+/// - Keep captions concise but descriptive
+/// - Screen readers announce captions before table content
+/// - Use CSS `caption-side` property for visual positioning
+///
+/// # WHATWG Specification
+///
+/// - [4.9.2 The caption element](https://html.spec.whatwg.org/multipage/tables.html#the-caption-element)
 pub struct Caption;
 impl HtmlElement for Caption {
     const TAG: &'static str = "caption";
 }
 
-/// The `<colgroup>` element - column group.
+/// The `<colgroup>` element - defines a group of columns in a table.
+///
+/// # Purpose
+///
+/// The `<colgroup>` element specifies a group of one or more columns in a table for formatting
+/// purposes. It allows styling of entire columns without repeating styles on each cell. Can
+/// contain `<col>` elements or use the `span` attribute to define column groups.
+///
+/// # Content Categories
+///
+/// - None (only valid within `<table>`, after `<caption>` and before table rows)
+///
+/// # Permitted Content Model
+///
+/// - If `span` attribute is present: empty
+/// - Otherwise: zero or more `<col>` elements
+///
+/// # Common Use Cases
+///
+/// - Styling multiple columns with shared characteristics
+/// - Grouping related columns semantically
+/// - Setting widths for multiple columns at once
+/// - Applying background colors to column groups
+/// - Defining visibility for column groups
+///
+/// # Key Attributes
+///
+/// - `span`: Number of columns the group spans (if no `<col>` children)
+///
+/// # Example
+///
+/// ```html
+/// <!-- Column group with span -->
+/// <table>
+///   <colgroup span="2" class="financial-data"></colgroup>
+///   <colgroup></colgroup>
+///   <thead>
+///     <tr>
+///       <th>Item</th>
+///       <th>Price</th>
+///       <th>Stock</th>
+///     </tr>
+///   </thead>
+/// </table>
+///
+/// <!-- Column group with col elements -->
+/// <table>
+///   <colgroup>
+///     <col class="name-col">
+///     <col class="email-col">
+///   </colgroup>
+///   <colgroup>
+///     <col class="role-col">
+///   </colgroup>
+///   <thead>
+///     <tr>
+///       <th>Name</th>
+///       <th>Email</th>
+///       <th>Role</th>
+///     </tr>
+///   </thead>
+/// </table>
+///
+/// <!-- Styling column groups -->
+/// <table>
+///   <colgroup>
+///     <col>
+///   </colgroup>
+///   <colgroup class="highlight">
+///     <col span="2">
+///   </colgroup>
+///   <thead>
+///     <tr>
+///       <th>Product</th>
+///       <th>Q1</th>
+///       <th>Q2</th>
+///     </tr>
+///   </thead>
+/// </table>
+/// ```
+///
+/// # WHATWG Specification
+///
+/// - [4.9.3 The colgroup element](https://html.spec.whatwg.org/multipage/tables.html#the-colgroup-element)
 pub struct Colgroup;
 impl HtmlElement for Colgroup {
     const TAG: &'static str = "colgroup";
 }
 
-/// The `<col>` element - column.
+/// The `<col>` element - defines a column within a table.
+///
+/// # Purpose
+///
+/// The `<col>` element defines a column or a group of columns within a table. Used inside
+/// `<colgroup>` to apply attributes and styles to entire columns without affecting individual
+/// cells. Provides a way to style columns collectively.
+///
+/// # Content Categories
+///
+/// - None (only valid within `<colgroup>`)
+///
+/// # Permitted Content Model
+///
+/// - None (void element)
+///
+/// # Common Use Cases
+///
+/// - Setting column widths
+/// - Applying styles to specific columns
+/// - Defining visibility for individual columns
+/// - Grouping columns with shared formatting
+/// - Creating alternating column styles
+///
+/// # Key Attributes
+///
+/// - `span`: Number of consecutive columns this element represents (default: 1)
+///
+/// # Example
+///
+/// ```html
+/// <!-- Individual column styling -->
+/// <table>
+///   <colgroup>
+///     <col class="name-column">
+///     <col class="data-column">
+///     <col class="data-column">
+///   </colgroup>
+///   <thead>
+///     <tr>
+///       <th>Name</th>
+///       <th>Value 1</th>
+///       <th>Value 2</th>
+///     </tr>
+///   </thead>
+/// </table>
+///
+/// <!-- Using span attribute -->
+/// <table>
+///   <colgroup>
+///     <col>
+///     <col span="2" class="numeric-columns">
+///     <col>
+///   </colgroup>
+///   <thead>
+///     <tr>
+///       <th>Product</th>
+///       <th>Price</th>
+///       <th>Quantity</th>
+///       <th>Notes</th>
+///     </tr>
+///   </thead>
+/// </table>
+///
+/// <!-- Column widths -->
+/// <table>
+///   <colgroup>
+///     <col style="width: 40%;">
+///     <col style="width: 30%;">
+///     <col style="width: 30%;">
+///   </colgroup>
+///   <thead>
+///     <tr>
+///       <th>Description</th>
+///       <th>Category</th>
+///       <th>Status</th>
+///     </tr>
+///   </thead>
+/// </table>
+/// ```
+///
+/// # WHATWG Specification
+///
+/// - [4.9.4 The col element](https://html.spec.whatwg.org/multipage/tables.html#the-col-element)
 pub struct Col;
 impl HtmlElement for Col {
     const TAG: &'static str = "col";
     const VOID: bool = true;
 }
 
-/// The `<thead>` element - table header.
+/// The `<thead>` element - groups header rows in a table.
+///
+/// # Purpose
+///
+/// The `<thead>` element groups one or more `<tr>` elements that contain table headers.
+/// It defines the header section of a table, typically containing column labels. Browsers
+/// can use this to enable scrolling of the table body independently of the header, and to
+/// repeat headers when printing multi-page tables.
+///
+/// # Content Categories
+///
+/// - None (only valid within `<table>`)
+///
+/// # Permitted Content Model
+///
+/// - Zero or more `<tr>` elements
+///
+/// # Common Use Cases
+///
+/// - Defining column headers for tables
+/// - Creating sticky headers that remain visible while scrolling
+/// - Enabling header repetition in printed tables
+/// - Semantically separating headers from data
+/// - Styling table headers distinctly from data
+///
+/// # Key Attributes
+///
+/// - Global attributes only
+///
+/// # Example
+///
+/// ```html
+/// <!-- Basic table header -->
+/// <table>
+///   <thead>
+///     <tr>
+///       <th>Name</th>
+///       <th>Email</th>
+///       <th>Role</th>
+///     </tr>
+///   </thead>
+///   <tbody>
+///     <tr>
+///       <td>John Doe</td>
+///       <td>john@example.com</td>
+///       <td>Developer</td>
+///     </tr>
+///   </tbody>
+/// </table>
+///
+/// <!-- Multi-row header -->
+/// <table>
+///   <thead>
+///     <tr>
+///       <th rowspan="2">Name</th>
+///       <th colspan="2">Contact</th>
+///     </tr>
+///     <tr>
+///       <th>Email</th>
+///       <th>Phone</th>
+///     </tr>
+///   </thead>
+///   <tbody>
+///     <tr>
+///       <td>Alice</td>
+///       <td>alice@example.com</td>
+///       <td>555-0001</td>
+///     </tr>
+///   </tbody>
+/// </table>
+///
+/// <!-- Sticky header -->
+/// <table>
+///   <thead style="position: sticky; top: 0; background: white;">
+///     <tr>
+///       <th>Product</th>
+///       <th>Price</th>
+///       <th>Stock</th>
+///     </tr>
+///   </thead>
+///   <tbody>
+///     <tr>
+///       <td>Widget</td>
+///       <td>$10</td>
+///       <td>50</td>
+///     </tr>
+///     <!-- Many more rows... -->
+///   </tbody>
+/// </table>
+/// ```
+///
+/// # Accessibility
+///
+/// - Use `<th>` elements within `<thead>` for proper header semantics
+/// - Add `scope` attributes to header cells for complex tables
+/// - Ensure header text is descriptive and concise
+///
+/// # WHATWG Specification
+///
+/// - [4.9.6 The thead element](https://html.spec.whatwg.org/multipage/tables.html#the-thead-element)
 pub struct Thead;
 impl HtmlElement for Thead {
     const TAG: &'static str = "thead";
 }
 
-/// The `<tbody>` element - table body.
+/// The `<tbody>` element - groups body content rows in a table.
+///
+/// # Purpose
+///
+/// The `<tbody>` element groups one or more `<tr>` elements as the body section of a table.
+/// It represents the main data content, as opposed to headers (`<thead>`) and footers (`<tfoot>`).
+/// Allows applying styles and behavior to the table body separately from headers and footers.
+///
+/// # Content Categories
+///
+/// - None (only valid within `<table>`)
+///
+/// # Permitted Content Model
+///
+/// - Zero or more `<tr>` elements
+///
+/// # Common Use Cases
+///
+/// - Separating table data from headers and footers
+/// - Applying styles to the table body
+/// - Enabling independent scrolling of table body
+/// - Grouping data rows semantically
+/// - Creating multiple body sections in complex tables
+///
+/// # Key Attributes
+///
+/// - Global attributes only
+///
+/// # Example
+///
+/// ```html
+/// <!-- Basic table body -->
+/// <table>
+///   <thead>
+///     <tr>
+///       <th>Name</th>
+///       <th>Age</th>
+///     </tr>
+///   </thead>
+///   <tbody>
+///     <tr>
+///       <td>Alice</td>
+///       <td>30</td>
+///     </tr>
+///     <tr>
+///       <td>Bob</td>
+///       <td>25</td>
+///     </tr>
+///   </tbody>
+/// </table>
+///
+/// <!-- Multiple tbody sections -->
+/// <table>
+///   <thead>
+///     <tr>
+///       <th>Product</th>
+///       <th>Price</th>
+///     </tr>
+///   </thead>
+///   <tbody>
+///     <tr>
+///       <td colspan="2"><strong>Electronics</strong></td>
+///     </tr>
+///     <tr>
+///       <td>Laptop</td>
+///       <td>$999</td>
+///     </tr>
+///   </tbody>
+///   <tbody>
+///     <tr>
+///       <td colspan="2"><strong>Clothing</strong></td>
+///     </tr>
+///     <tr>
+///       <td>T-Shirt</td>
+///       <td>$20</td>
+///     </tr>
+///   </tbody>
+/// </table>
+///
+/// <!-- Scrollable table body -->
+/// <table>
+///   <thead>
+///     <tr>
+///       <th>Date</th>
+///       <th>Event</th>
+///     </tr>
+///   </thead>
+///   <tbody style="display: block; max-height: 200px; overflow-y: scroll;">
+///     <tr>
+///       <td>2024-01-01</td>
+///       <td>New Year</td>
+///     </tr>
+///     <!-- More rows... -->
+///   </tbody>
+/// </table>
+/// ```
+///
+/// # WHATWG Specification
+///
+/// - [4.9.5 The tbody element](https://html.spec.whatwg.org/multipage/tables.html#the-tbody-element)
 pub struct Tbody;
 impl HtmlElement for Tbody {
     const TAG: &'static str = "tbody";
 }
 
-/// The `<tfoot>` element - table footer.
+/// The `<tfoot>` element - groups footer rows in a table.
+///
+/// # Purpose
+///
+/// The `<tfoot>` element groups one or more `<tr>` elements that contain summary or footer
+/// information for a table. Typically contains totals, summaries, or additional notes.
+/// Like `<thead>`, it can be repeated when printing multi-page tables and can remain visible
+/// during scrolling.
+///
+/// # Content Categories
+///
+/// - None (only valid within `<table>`)
+///
+/// # Permitted Content Model
+///
+/// - Zero or more `<tr>` elements
+///
+/// # Common Use Cases
+///
+/// - Displaying totals and summary calculations
+/// - Adding footnotes or additional context
+/// - Showing aggregate data for table columns
+/// - Creating sticky footers for scrollable tables
+/// - Providing supplementary information
+///
+/// # Key Attributes
+///
+/// - Global attributes only
+///
+/// # Example
+///
+/// ```html
+/// <!-- Table with totals footer -->
+/// <table>
+///   <thead>
+///     <tr>
+///       <th>Item</th>
+///       <th>Quantity</th>
+///       <th>Price</th>
+///     </tr>
+///   </thead>
+///   <tbody>
+///     <tr>
+///       <td>Widget</td>
+///       <td>5</td>
+///       <td>$50</td>
+///     </tr>
+///     <tr>
+///       <td>Gadget</td>
+///       <td>3</td>
+///       <td>$45</td>
+///     </tr>
+///   </tbody>
+///   <tfoot>
+///     <tr>
+///       <th>Total</th>
+///       <td>8</td>
+///       <td>$95</td>
+///     </tr>
+///   </tfoot>
+/// </table>
+///
+/// <!-- Footer with notes -->
+/// <table>
+///   <thead>
+///     <tr>
+///       <th>Product</th>
+///       <th>Status</th>
+///     </tr>
+///   </thead>
+///   <tbody>
+///     <tr>
+///       <td>Alpha</td>
+///       <td>Available</td>
+///     </tr>
+///   </tbody>
+///   <tfoot>
+///     <tr>
+///       <td colspan="2">
+///         <small>* Prices subject to change</small>
+///       </td>
+///     </tr>
+///   </tfoot>
+/// </table>
+///
+/// <!-- Multiple footer rows -->
+/// <table>
+///   <thead>
+///     <tr>
+///       <th>Category</th>
+///       <th>Amount</th>
+///     </tr>
+///   </thead>
+///   <tbody>
+///     <tr>
+///       <td>Sales</td>
+///       <td>$100,000</td>
+///     </tr>
+///   </tbody>
+///   <tfoot>
+///     <tr>
+///       <th>Subtotal</th>
+///       <td>$100,000</td>
+///     </tr>
+///     <tr>
+///       <th>Tax (10%)</th>
+///       <td>$10,000</td>
+///     </tr>
+///     <tr>
+///       <th>Total</th>
+///       <td>$110,000</td>
+///     </tr>
+///   </tfoot>
+/// </table>
+/// ```
+///
+/// # WHATWG Specification
+///
+/// - [4.9.7 The tfoot element](https://html.spec.whatwg.org/multipage/tables.html#the-tfoot-element)
 pub struct Tfoot;
 impl HtmlElement for Tfoot {
     const TAG: &'static str = "tfoot";
 }
 
-/// The `<tr>` element - table row.
+/// The `<tr>` element - defines a row of cells in a table.
+///
+/// # Purpose
+///
+/// The `<tr>` element represents a row of cells in a table. Each row contains one or more
+/// `<th>` (header cell) or `<td>` (data cell) elements. Rows can be grouped within `<thead>`,
+/// `<tbody>`, and `<tfoot>` elements for semantic structure.
+///
+/// # Content Categories
+///
+/// - None (only valid within `<table>`, `<thead>`, `<tbody>`, or `<tfoot>`)
+///
+/// # Permitted Content Model
+///
+/// - Zero or more `<td>` or `<th>` elements
+/// - Optionally intermixed with script-supporting elements
+///
+/// # Common Use Cases
+///
+/// - Creating rows of data in tables
+/// - Organizing tabular information horizontally
+/// - Building spreadsheet-like structures
+/// - Displaying lists of records
+/// - Creating pricing and comparison tables
+///
+/// # Key Attributes
+///
+/// - Global attributes only
+///
+/// # Example
+///
+/// ```html
+/// <!-- Basic table rows -->
+/// <table>
+///   <thead>
+///     <tr>
+///       <th>Name</th>
+///       <th>Age</th>
+///       <th>City</th>
+///     </tr>
+///   </thead>
+///   <tbody>
+///     <tr>
+///       <td>Alice</td>
+///       <td>30</td>
+///       <td>New York</td>
+///     </tr>
+///     <tr>
+///       <td>Bob</td>
+///       <td>25</td>
+///       <td>San Francisco</td>
+///     </tr>
+///   </tbody>
+/// </table>
+///
+/// <!-- Row with mixed headers and data -->
+/// <table>
+///   <tbody>
+///     <tr>
+///       <th scope="row">Product A</th>
+///       <td>$99</td>
+///       <td>In Stock</td>
+///     </tr>
+///     <tr>
+///       <th scope="row">Product B</th>
+///       <td>$149</td>
+///       <td>Out of Stock</td>
+///     </tr>
+///   </tbody>
+/// </table>
+///
+/// <!-- Row with colspan -->
+/// <table>
+///   <tr>
+///     <td colspan="3">Full width cell</td>
+///   </tr>
+///   <tr>
+///     <td>Cell 1</td>
+///     <td>Cell 2</td>
+///     <td>Cell 3</td>
+///   </tr>
+/// </table>
+///
+/// <!-- Alternating row styles -->
+/// <table>
+///   <tbody>
+///     <tr class="odd">
+///       <td>Row 1</td>
+///       <td>Data</td>
+///     </tr>
+///     <tr class="even">
+///       <td>Row 2</td>
+///       <td>Data</td>
+///     </tr>
+///   </tbody>
+/// </table>
+/// ```
+///
+/// # WHATWG Specification
+///
+/// - [4.9.8 The tr element](https://html.spec.whatwg.org/multipage/tables.html#the-tr-element)
 pub struct Tr;
 impl HtmlElement for Tr {
     const TAG: &'static str = "tr";
 }
 
-/// The `<th>` element - table header cell.
+/// The `<th>` element - defines a header cell in a table.
+///
+/// # Purpose
+///
+/// The `<th>` element represents a header cell in a table. It labels a row or column of data
+/// cells, providing context for the information in the table. Header cells are typically
+/// rendered with bold, centered text by default and are crucial for table accessibility.
+///
+/// # Content Categories
+///
+/// - None (only valid within `<tr>`)
+///
+/// # Permitted Content Model
+///
+/// - Flow content (excluding header, footer, sectioning content, and heading content)
+///
+/// # Common Use Cases
+///
+/// - Labeling table columns
+/// - Labeling table rows
+/// - Creating multi-level headers with rowspan/colspan
+/// - Providing context for data cells
+/// - Improving table accessibility for screen readers
+///
+/// # Key Attributes
+///
+/// - `scope`: Specifies cells the header relates to ("row", "col", "rowgroup", "colgroup")
+/// - `colspan`: Number of columns the header spans
+/// - `rowspan`: Number of rows the header spans
+/// - `headers`: Space-separated list of other header cell IDs
+/// - `abbr`: Abbreviated description of the header
+///
+/// # Example
+///
+/// ```html
+/// <!-- Column headers -->
+/// <table>
+///   <thead>
+///     <tr>
+///       <th scope="col">Name</th>
+///       <th scope="col">Email</th>
+///       <th scope="col">Role</th>
+///     </tr>
+///   </thead>
+///   <tbody>
+///     <tr>
+///       <td>Alice</td>
+///       <td>alice@example.com</td>
+///       <td>Developer</td>
+///     </tr>
+///   </tbody>
+/// </table>
+///
+/// <!-- Row headers -->
+/// <table>
+///   <tbody>
+///     <tr>
+///       <th scope="row">Product A</th>
+///       <td>$99</td>
+///       <td>In Stock</td>
+///     </tr>
+///     <tr>
+///       <th scope="row">Product B</th>
+///       <td>$149</td>
+///       <td>Out of Stock</td>
+///     </tr>
+///   </tbody>
+/// </table>
+///
+/// <!-- Multi-level headers -->
+/// <table>
+///   <thead>
+///     <tr>
+///       <th rowspan="2" scope="col">Name</th>
+///       <th colspan="2" scope="colgroup">Scores</th>
+///     </tr>
+///     <tr>
+///       <th scope="col">Math</th>
+///       <th scope="col">Science</th>
+///     </tr>
+///   </thead>
+///   <tbody>
+///     <tr>
+///       <th scope="row">Alice</th>
+///       <td>95</td>
+///       <td>92</td>
+///     </tr>
+///   </tbody>
+/// </table>
+///
+/// <!-- Headers with abbreviations -->
+/// <table>
+///   <thead>
+///     <tr>
+///       <th scope="col" abbr="Temp">Temperature (°F)</th>
+///       <th scope="col" abbr="Humid">Humidity (%)</th>
+///     </tr>
+///   </thead>
+///   <tbody>
+///     <tr>
+///       <td>72</td>
+///       <td>65</td>
+///     </tr>
+///   </tbody>
+/// </table>
+/// ```
+///
+/// # Accessibility
+///
+/// - Always use `scope` attribute to clarify what the header labels
+/// - Use "col" for column headers, "row" for row headers
+/// - Use "colgroup" or "rowgroup" for headers spanning groups
+/// - Provide `abbr` for long header text to aid screen readers
+/// - Ensure header text is concise and descriptive
+///
+/// # WHATWG Specification
+///
+/// - [4.9.10 The th element](https://html.spec.whatwg.org/multipage/tables.html#the-th-element)
 pub struct Th;
 impl HtmlElement for Th {
     const TAG: &'static str = "th";
 }
 
-/// The `<td>` element - table data cell.
+/// The `<td>` element - defines a data cell in a table.
+///
+/// # Purpose
+///
+/// The `<td>` element represents a data cell in a table. It contains the actual data values
+/// within table rows. Can span multiple rows or columns using `rowspan` and `colspan` attributes.
+/// Distinguished from `<th>` header cells which label data.
+///
+/// # Content Categories
+///
+/// - Sectioning Root
+///
+/// # Permitted Content Model
+///
+/// - Flow content
+///
+/// # Common Use Cases
+///
+/// - Displaying data values in tables
+/// - Creating spreadsheet cells
+/// - Showing individual records in datasets
+/// - Building data grids and matrices
+/// - Presenting structured information
+///
+/// # Key Attributes
+///
+/// - `colspan`: Number of columns the cell spans
+/// - `rowspan`: Number of rows the cell spans
+/// - `headers`: Space-separated list of header cell IDs this cell relates to
+///
+/// # Example
+///
+/// ```html
+/// <!-- Basic data cells -->
+/// <table>
+///   <tr>
+///     <th>Name</th>
+///     <th>Score</th>
+///   </tr>
+///   <tr>
+///     <td>Alice</td>
+///     <td>95</td>
+///   </tr>
+///   <tr>
+///     <td>Bob</td>
+///     <td>87</td>
+///   </tr>
+/// </table>
+///
+/// <!-- Cells with colspan -->
+/// <table>
+///   <tr>
+///     <td colspan="2">This cell spans two columns</td>
+///   </tr>
+///   <tr>
+///     <td>Column 1</td>
+///     <td>Column 2</td>
+///   </tr>
+/// </table>
+///
+/// <!-- Cells with rowspan -->
+/// <table>
+///   <tr>
+///     <td rowspan="2">Spans 2 rows</td>
+///     <td>Row 1, Col 2</td>
+///   </tr>
+///   <tr>
+///     <td>Row 2, Col 2</td>
+///   </tr>
+/// </table>
+///
+/// <!-- Complex table with headers attribute -->
+/// <table>
+///   <thead>
+///     <tr>
+///       <th id="name">Name</th>
+///       <th id="math">Math</th>
+///       <th id="science">Science</th>
+///     </tr>
+///   </thead>
+///   <tbody>
+///     <tr>
+///       <th id="alice">Alice</th>
+///       <td headers="alice math">95</td>
+///       <td headers="alice science">92</td>
+///     </tr>
+///   </tbody>
+/// </table>
+///
+/// <!-- Rich content in cells -->
+/// <table>
+///   <tr>
+///     <td>
+///       <strong>Product Name</strong><br>
+///       <small>SKU: 12345</small>
+///     </td>
+///     <td>
+///       <a href="/details">View Details</a>
+///     </td>
+///   </tr>
+/// </table>
+/// ```
+///
+/// # Accessibility
+///
+/// - Use `headers` attribute to associate cells with headers in complex tables
+/// - Ensure data cells are properly associated with their headers
+/// - Keep cell content concise and scannable
+/// - Use `scope` on header cells to clarify relationships
+///
+/// # WHATWG Specification
+///
+/// - [4.9.9 The td element](https://html.spec.whatwg.org/multipage/tables.html#the-td-element)
 pub struct Td;
 impl HtmlElement for Td {
     const TAG: &'static str = "td";
@@ -4132,7 +6624,95 @@ impl HtmlElement for Td {
 // Forms
 // =============================================================================
 
-/// The `<form>` element - form.
+/// The `<form>` element - represents a document section containing interactive controls for submitting information.
+///
+/// # Purpose
+///
+/// The `<form>` element represents a collection of form-associated elements for gathering
+/// user input and submitting data to a server. It provides the context for form controls,
+/// handles submission, and defines how data should be encoded and transmitted.
+///
+/// # Content Categories
+///
+/// - Flow Content
+/// - Palpable Content
+///
+/// # Permitted Content Model
+///
+/// - Flow content (but no nested `<form>` elements)
+///
+/// # Common Use Cases
+///
+/// - User registration and login forms
+/// - Search interfaces
+/// - Contact and feedback forms
+/// - E-commerce checkout processes
+/// - Survey and questionnaire forms
+///
+/// # Key Attributes
+///
+/// - `action`: URL where form data is sent
+/// - `method`: HTTP method for submission ("get" or "post")
+/// - `enctype`: Encoding type for form data ("application/x-www-form-urlencoded", "multipart/form-data", "text/plain")
+/// - `name`: Name of the form
+/// - `target`: Browsing context for response ("_self", "_blank", "_parent", "_top")
+/// - `novalidate`: Disable built-in validation
+/// - `autocomplete`: Enable/disable autocomplete ("on" or "off")
+/// - `accept-charset`: Character encodings for submission
+///
+/// # Example
+///
+/// ```html
+/// <!-- Basic login form -->
+/// <form action="/login" method="post">
+///   <label for="username">Username:</label>
+///   <input type="text" id="username" name="username" required>
+///   
+///   <label for="password">Password:</label>
+///   <input type="password" id="password" name="password" required>
+///   
+///   <button type="submit">Log In</button>
+/// </form>
+///
+/// <!-- Search form with GET -->
+/// <form action="/search" method="get" role="search">
+///   <label for="q">Search:</label>
+///   <input type="search" id="q" name="q" placeholder="Enter search terms">
+///   <button type="submit">Search</button>
+/// </form>
+///
+/// <!-- File upload form -->
+/// <form action="/upload" method="post" enctype="multipart/form-data">
+///   <label for="file">Choose file:</label>
+///   <input type="file" id="file" name="file" required>
+///   <button type="submit">Upload</button>
+/// </form>
+///
+/// <!-- Form with validation disabled -->
+/// <form action="/submit" method="post" novalidate>
+///   <input type="email" name="email">
+///   <button type="submit">Submit</button>
+/// </form>
+///
+/// <!-- Form targeting new window -->
+/// <form action="/external" method="post" target="_blank">
+///   <input type="text" name="data">
+///   <button type="submit">Open in New Tab</button>
+/// </form>
+/// ```
+///
+/// # Accessibility
+///
+/// - Use `<label>` elements for all form controls
+/// - Group related fields with `<fieldset>` and `<legend>`
+/// - Provide clear error messages near relevant fields
+/// - Ensure logical tab order through form fields
+/// - Use `autocomplete` attributes appropriately
+/// - Add `aria-describedby` for additional instructions
+///
+/// # WHATWG Specification
+///
+/// - [4.10.3 The form element](https://html.spec.whatwg.org/multipage/forms.html#the-form-element)
 pub struct Form;
 impl HtmlElement for Form {
     const TAG: &'static str = "form";
@@ -4140,7 +6720,93 @@ impl HtmlElement for Form {
 impl FlowContent for Form {}
 impl PalpableContent for Form {}
 
-/// The `<label>` element - form label.
+/// The `<label>` element - represents a caption for a form control.
+///
+/// # Purpose
+///
+/// The `<label>` element provides a text label for a form control, creating an explicit
+/// association between the label text and the control. Clicking the label activates the
+/// associated control, improving usability and accessibility. Essential for screen readers
+/// and assistive technologies.
+///
+/// # Content Categories
+///
+/// - Flow Content
+/// - Phrasing Content
+/// - Interactive Content
+/// - Palpable Content
+///
+/// # Permitted Content Model
+///
+/// - Phrasing content (excluding other `<label>` elements and labelable elements other than the labeled control)
+///
+/// # Common Use Cases
+///
+/// - Labeling text inputs and textareas
+/// - Labeling checkboxes and radio buttons
+/// - Labeling select dropdowns
+/// - Improving form accessibility
+/// - Increasing click target area for form controls
+///
+/// # Key Attributes
+///
+/// - `for`: ID of the form control this label is associated with
+///
+/// # Example
+///
+/// ```html
+/// <!-- Label with for attribute -->
+/// <label for="username">Username:</label>
+/// <input type="text" id="username" name="username">
+///
+/// <!-- Label wrapping input -->
+/// <label>
+///   Email:
+///   <input type="email" name="email">
+/// </label>
+///
+/// <!-- Checkbox with label -->
+/// <input type="checkbox" id="terms" name="terms">
+/// <label for="terms">I agree to the terms and conditions</label>
+///
+/// <!-- Radio buttons with labels -->
+/// <fieldset>
+///   <legend>Choose a size:</legend>
+///   <input type="radio" id="small" name="size" value="small">
+///   <label for="small">Small</label>
+///   
+///   <input type="radio" id="medium" name="size" value="medium">
+///   <label for="medium">Medium</label>
+///   
+///   <input type="radio" id="large" name="size" value="large">
+///   <label for="large">Large</label>
+/// </fieldset>
+///
+/// <!-- Label with required indicator -->
+/// <label for="email">
+///   Email Address <abbr title="required" aria-label="required">*</abbr>
+/// </label>
+/// <input type="email" id="email" name="email" required>
+///
+/// <!-- Wrapping label for checkbox -->
+/// <label>
+///   <input type="checkbox" name="subscribe" value="yes">
+///   Subscribe to newsletter
+/// </label>
+/// ```
+///
+/// # Accessibility
+///
+/// - Always associate labels with form controls using `for` attribute or wrapping
+/// - Ensure label text is descriptive and concise
+/// - Don't use placeholder text as a substitute for labels
+/// - Use `aria-label` or `aria-labelledby` when visual labels aren't possible
+/// - Indicate required fields clearly
+/// - Avoid nesting interactive elements within labels
+///
+/// # WHATWG Specification
+///
+/// - [4.10.4 The label element](https://html.spec.whatwg.org/multipage/forms.html#the-label-element)
 pub struct Label;
 impl HtmlElement for Label {
     const TAG: &'static str = "label";
@@ -4150,7 +6816,112 @@ impl PhrasingContent for Label {}
 impl InteractiveContent for Label {}
 impl PalpableContent for Label {}
 
-/// The `<input>` element - form input.
+/// The `<input>` element - represents a typed data field for user input.
+///
+/// # Purpose
+///
+/// The `<input>` element is a versatile form control for collecting user input. Its behavior
+/// and appearance vary dramatically based on the `type` attribute, ranging from text fields
+/// to buttons, checkboxes, date pickers, and more. The most commonly used form element.
+///
+/// # Content Categories
+///
+/// - Flow Content
+/// - Phrasing Content
+/// - If `type` is not "hidden": Interactive Content
+/// - Palpable Content
+///
+/// # Permitted Content Model
+///
+/// - None (void element)
+///
+/// # Common Use Cases
+///
+/// - Text and password input fields
+/// - Checkboxes and radio buttons for selections
+/// - File uploads
+/// - Date, time, and color pickers
+/// - Number and range sliders
+///
+/// # Key Attributes
+///
+/// - `type`: Input type (text, password, email, number, checkbox, radio, file, date, etc.)
+/// - `name`: Name for form submission
+/// - `value`: Current value of the control
+/// - `placeholder`: Hint text displayed when empty
+/// - `required`: Makes the field mandatory
+/// - `disabled`: Disables the control
+/// - `readonly`: Makes the field read-only
+/// - `min`, `max`: Minimum and maximum values (for numeric/date types)
+/// - `step`: Increment step (for numeric types)
+/// - `pattern`: Regular expression for validation
+/// - `autocomplete`: Autocomplete hint
+/// - `multiple`: Allow multiple values (file, email)
+/// - `accept`: File types to accept (for file inputs)
+/// - `checked`: Pre-checked state (checkbox, radio)
+///
+/// # Example
+///
+/// ```html
+/// <!-- Text input -->
+/// <label for="name">Name:</label>
+/// <input type="text" id="name" name="name" placeholder="Enter your name" required>
+///
+/// <!-- Email with validation -->
+/// <label for="email">Email:</label>
+/// <input type="email" id="email" name="email" placeholder="user@example.com" required>
+///
+/// <!-- Password field -->
+/// <label for="pwd">Password:</label>
+/// <input type="password" id="pwd" name="password" minlength="8" required>
+///
+/// <!-- Number with range -->
+/// <label for="age">Age:</label>
+/// <input type="number" id="age" name="age" min="18" max="120" step="1">
+///
+/// <!-- Checkbox -->
+/// <input type="checkbox" id="subscribe" name="subscribe" value="yes" checked>
+/// <label for="subscribe">Subscribe to newsletter</label>
+///
+/// <!-- Radio buttons -->
+/// <input type="radio" id="color-red" name="color" value="red">
+/// <label for="color-red">Red</label>
+/// <input type="radio" id="color-blue" name="color" value="blue">
+/// <label for="color-blue">Blue</label>
+///
+/// <!-- File upload -->
+/// <label for="avatar">Profile picture:</label>
+/// <input type="file" id="avatar" name="avatar" accept="image/*">
+///
+/// <!-- Date picker -->
+/// <label for="dob">Date of birth:</label>
+/// <input type="date" id="dob" name="dob" min="1900-01-01" max="2024-12-31">
+///
+/// <!-- Range slider -->
+/// <label for="volume">Volume:</label>
+/// <input type="range" id="volume" name="volume" min="0" max="100" value="50">
+///
+/// <!-- Search field -->
+/// <input type="search" name="q" placeholder="Search..." autocomplete="off">
+///
+/// <!-- Color picker -->
+/// <label for="color">Choose color:</label>
+/// <input type="color" id="color" name="color" value="#ff0000">
+/// ```
+///
+/// # Accessibility
+///
+/// - Always provide associated `<label>` elements
+/// - Use appropriate `type` attribute for semantic meaning
+/// - Provide helpful placeholder text (but don't rely on it alone)
+/// - Use `aria-describedby` for additional instructions
+/// - Ensure sufficient color contrast for visible inputs
+/// - Make error messages clear and associated with inputs
+/// - Use `autocomplete` for common fields
+///
+/// # WHATWG Specification
+///
+/// - [4.10.5 The input element](https://html.spec.whatwg.org/multipage/input.html#the-input-element)
 pub struct Input;
 impl HtmlElement for Input {
     const TAG: &'static str = "input";
@@ -4161,7 +6932,110 @@ impl PhrasingContent for Input {}
 impl InteractiveContent for Input {}
 impl PalpableContent for Input {}
 
-/// The `<button>` element - button.
+/// The `<button>` element - represents a clickable button.
+///
+/// # Purpose
+///
+/// The `<button>` element represents a clickable button control. Unlike `<input type="button">`,
+/// it can contain rich content like text, images, and other elements. Used for form submission,
+/// resetting forms, or triggering custom JavaScript actions. More flexible and semantic than
+/// input buttons.
+///
+/// # Content Categories
+///
+/// - Flow Content
+/// - Phrasing Content
+/// - Interactive Content
+/// - Palpable Content
+///
+/// # Permitted Content Model
+///
+/// - Phrasing content (but no interactive content descendants)
+///
+/// # Common Use Cases
+///
+/// - Form submission buttons
+/// - Form reset buttons
+/// - Custom action buttons with JavaScript
+/// - Toggle buttons for UI state changes
+/// - Buttons with icons or complex content
+///
+/// # Key Attributes
+///
+/// - `type`: Button type ("submit", "reset", "button")
+/// - `name`: Name for form submission
+/// - `value`: Value sent with form submission
+/// - `disabled`: Disables the button
+/// - `form`: Associates with a form by ID
+/// - `formaction`: Override form's action URL
+/// - `formmethod`: Override form's method
+/// - `formenctype`: Override form's encoding type
+/// - `formnovalidate`: Override form's validation
+/// - `formtarget`: Override form's target
+///
+/// # Example
+///
+/// ```html
+/// <!-- Submit button -->
+/// <form action="/submit" method="post">
+///   <input type="text" name="username">
+///   <button type="submit">Submit</button>
+/// </form>
+///
+/// <!-- Reset button -->
+/// <form>
+///   <input type="text" name="data">
+///   <button type="reset">Reset Form</button>
+/// </form>
+///
+/// <!-- Button with custom action -->
+/// <button type="button" onclick="alert('Clicked!')">Click Me</button>
+///
+/// <!-- Button with icon -->
+/// <button type="submit">
+///   <svg width="16" height="16">
+///     <path d="M8 0l8 8-8 8-8-8z"/>
+///   </svg>
+///   Submit Form
+/// </button>
+///
+/// <!-- Disabled button -->
+/// <button type="submit" disabled>Please wait...</button>
+///
+/// <!-- Button overriding form attributes -->
+/// <form action="/default" method="post">
+///   <input type="text" name="data">
+///   <button type="submit">Normal Submit</button>
+///   <button type="submit" formaction="/alternative" formmethod="get">
+///     Alternative Submit
+///   </button>
+/// </form>
+///
+/// <!-- Button associated with external form -->
+/// <form id="myForm" action="/submit">
+///   <input type="text" name="field">
+/// </form>
+/// <button type="submit" form="myForm">Submit External Form</button>
+///
+/// <!-- Delete button with confirmation -->
+/// <button type="button" onclick="if(confirm('Delete?')) submit()">
+///   Delete Item
+/// </button>
+/// ```
+///
+/// # Accessibility
+///
+/// - Use descriptive button text that explains the action
+/// - Provide `aria-label` when button contains only an icon
+/// - Use `type="button"` for non-submit actions to prevent accidental submission
+/// - Ensure sufficient color contrast for button text
+/// - Make buttons keyboard accessible (they are by default)
+/// - Use `disabled` attribute to prevent interaction, not just CSS
+/// - Provide visual feedback for button states (hover, active, disabled)
+///
+/// # WHATWG Specification
+///
+/// - [4.10.6 The button element](https://html.spec.whatwg.org/multipage/form-elements.html#the-button-element)
 pub struct Button;
 impl HtmlElement for Button {
     const TAG: &'static str = "button";
@@ -4171,7 +7045,115 @@ impl PhrasingContent for Button {}
 impl InteractiveContent for Button {}
 impl PalpableContent for Button {}
 
-/// The `<select>` element - selection control.
+/// The `<select>` element - represents a control for selecting among a set of options.
+///
+/// # Purpose
+///
+/// The `<select>` element provides a dropdown list of options from which users can choose
+/// one or more values. Contains `<option>` elements that define the available choices, and
+/// can be grouped using `<optgroup>` elements. More compact than radio buttons for multiple
+/// choices.
+///
+/// # Content Categories
+///
+/// - Flow Content
+/// - Phrasing Content
+/// - Interactive Content
+/// - Palpable Content
+///
+/// # Permitted Content Model
+///
+/// - Zero or more `<option>` or `<optgroup>` elements
+///
+/// # Common Use Cases
+///
+/// - Country or state selection dropdowns
+/// - Category or type selectors
+/// - Quantity or size pickers
+/// - Date component selectors (month, year)
+/// - Multi-select lists for tags or categories
+///
+/// # Key Attributes
+///
+/// - `name`: Name for form submission
+/// - `multiple`: Allow selecting multiple options
+/// - `size`: Number of visible options
+/// - `required`: Make selection mandatory
+/// - `disabled`: Disable the entire select
+/// - `autocomplete`: Autocomplete hint
+/// - `form`: Associates with a form by ID
+///
+/// # Example
+///
+/// ```html
+/// <!-- Basic dropdown -->
+/// <label for="country">Country:</label>
+/// <select id="country" name="country">
+///   <option value="">Select a country</option>
+///   <option value="us">United States</option>
+///   <option value="uk">United Kingdom</option>
+///   <option value="ca">Canada</option>
+/// </select>
+///
+/// <!-- Select with pre-selected option -->
+/// <label for="size">Size:</label>
+/// <select id="size" name="size">
+///   <option value="s">Small</option>
+///   <option value="m" selected>Medium</option>
+///   <option value="l">Large</option>
+/// </select>
+///
+/// <!-- Multi-select -->
+/// <label for="interests">Interests (select multiple):</label>
+/// <select id="interests" name="interests" multiple size="4">
+///   <option value="sports">Sports</option>
+///   <option value="music">Music</option>
+///   <option value="art">Art</option>
+///   <option value="tech">Technology</option>
+/// </select>
+///
+/// <!-- Grouped options -->
+/// <label for="car">Choose a car:</label>
+/// <select id="car" name="car">
+///   <optgroup label="Swedish Cars">
+///     <option value="volvo">Volvo</option>
+///     <option value="saab">Saab</option>
+///   </optgroup>
+///   <optgroup label="German Cars">
+///     <option value="mercedes">Mercedes</option>
+///     <option value="audi">Audi</option>
+///   </optgroup>
+/// </select>
+///
+/// <!-- Required select with placeholder -->
+/// <label for="department">Department:</label>
+/// <select id="department" name="department" required>
+///   <option value="" disabled selected>-- Choose department --</option>
+///   <option value="sales">Sales</option>
+///   <option value="engineering">Engineering</option>
+///   <option value="support">Support</option>
+/// </select>
+///
+/// <!-- Disabled select -->
+/// <label for="status">Status:</label>
+/// <select id="status" name="status" disabled>
+///   <option>Processing</option>
+/// </select>
+/// ```
+///
+/// # Accessibility
+///
+/// - Always provide an associated `<label>`
+/// - Use first option as a prompt/placeholder, not a valid choice
+/// - Provide clear option text
+/// - Group related options with `<optgroup>`
+/// - For long lists, consider searchable alternatives
+/// - Ensure keyboard navigation works properly
+/// - Use `aria-describedby` for additional instructions
+///
+/// # WHATWG Specification
+///
+/// - [4.10.7 The select element](https://html.spec.whatwg.org/multipage/form-elements.html#the-select-element)
 pub struct Select;
 impl HtmlElement for Select {
     const TAG: &'static str = "select";
@@ -4181,7 +7163,96 @@ impl PhrasingContent for Select {}
 impl InteractiveContent for Select {}
 impl PalpableContent for Select {}
 
-/// The `<datalist>` element - predefined options.
+/// The `<datalist>` element - contains a set of predefined options for other controls.
+///
+/// # Purpose
+///
+/// The `<datalist>` element provides a list of predefined options for an `<input>` element.
+/// It creates an autocomplete or suggestion feature where users can either select from the
+/// list or type their own value. Offers flexibility between free-form input and selection.
+///
+/// # Content Categories
+///
+/// - Flow Content
+/// - Phrasing Content
+///
+/// # Permitted Content Model
+///
+/// - Either: Phrasing content
+/// - Or: Zero or more `<option>` elements
+///
+/// # Common Use Cases
+///
+/// - Autocomplete suggestions for text inputs
+/// - Common value suggestions with custom input allowed
+/// - Search suggestions
+/// - Product or category suggestions
+/// - Location or address suggestions
+///
+/// # Key Attributes
+///
+/// - `id`: ID referenced by input's `list` attribute (required)
+///
+/// # Example
+///
+/// ```html
+/// <!-- Basic datalist for text input -->
+/// <label for="browser">Choose a browser:</label>
+/// <input list="browsers" id="browser" name="browser">
+/// <datalist id="browsers">
+///   <option value="Chrome">
+///   <option value="Firefox">
+///   <option value="Safari">
+///   <option value="Edge">
+/// </datalist>
+///
+/// <!-- Datalist with labels -->
+/// <label for="ice-cream">Favorite ice cream:</label>
+/// <input list="ice-cream-flavors" id="ice-cream" name="ice-cream">
+/// <datalist id="ice-cream-flavors">
+///   <option value="Chocolate">Rich chocolate</option>
+///   <option value="Vanilla">Classic vanilla</option>
+///   <option value="Strawberry">Fresh strawberry</option>
+/// </datalist>
+///
+/// <!-- Datalist for email with common domains -->
+/// <label for="email">Email:</label>
+/// <input type="email" list="email-domains" id="email" name="email">
+/// <datalist id="email-domains">
+///   <option value="user@gmail.com">
+///   <option value="user@yahoo.com">
+///   <option value="user@outlook.com">
+/// </datalist>
+///
+/// <!-- Datalist for search -->
+/// <label for="search">Search:</label>
+/// <input type="search" list="recent-searches" id="search" name="q">
+/// <datalist id="recent-searches">
+///   <option value="HTML tutorials">
+///   <option value="CSS grid layout">
+///   <option value="JavaScript async">
+/// </datalist>
+///
+/// <!-- Datalist for URL input -->
+/// <label for="website">Website:</label>
+/// <input type="url" list="popular-sites" id="website" name="website">
+/// <datalist id="popular-sites">
+///   <option value="https://github.com">
+///   <option value="https://stackoverflow.com">
+///   <option value="https://developer.mozilla.org">
+/// </datalist>
+/// ```
+///
+/// # Accessibility
+///
+/// - Options are announced to screen readers as suggestions
+/// - Users can still type custom values
+/// - Works with standard input accessibility features
+/// - Provide meaningful option values
+///
+/// # WHATWG Specification
+///
+/// - [4.10.8 The datalist element](https://html.spec.whatwg.org/multipage/form-elements.html#the-datalist-element)
 pub struct Datalist;
 impl HtmlElement for Datalist {
     const TAG: &'static str = "datalist";
@@ -4189,19 +7260,318 @@ impl HtmlElement for Datalist {
 impl FlowContent for Datalist {}
 impl PhrasingContent for Datalist {}
 
-/// The `<optgroup>` element - option group.
+/// The `<optgroup>` element - groups related options within a `<select>` element.
+///
+/// # Purpose
+///
+/// The `<optgroup>` element groups related `<option>` elements within a `<select>` element.
+/// Provides semantic grouping and visual separation of options, making long select lists
+/// more organized and easier to navigate. Option groups are typically displayed with
+/// indented options and a bold group label.
+///
+/// # Content Categories
+///
+/// - None (only valid within `<select>`)
+///
+/// # Permitted Content Model
+///
+/// - Zero or more `<option>` elements
+///
+/// # Common Use Cases
+///
+/// - Organizing countries by region
+/// - Grouping products by category
+/// - Categorizing options by type or brand
+/// - Structuring hierarchical selections
+/// - Improving navigation in long dropdown lists
+///
+/// # Key Attributes
+///
+/// - `label`: Name of the group (required)
+/// - `disabled`: Disables all options in the group
+///
+/// # Example
+///
+/// ```html
+/// <!-- Countries grouped by region -->
+/// <label for="country">Select country:</label>
+/// <select id="country" name="country">
+///   <optgroup label="North America">
+///     <option value="us">United States</option>
+///     <option value="ca">Canada</option>
+///     <option value="mx">Mexico</option>
+///   </optgroup>
+///   <optgroup label="Europe">
+///     <option value="uk">United Kingdom</option>
+///     <option value="de">Germany</option>
+///     <option value="fr">France</option>
+///   </optgroup>
+///   <optgroup label="Asia">
+///     <option value="jp">Japan</option>
+///     <option value="cn">China</option>
+///     <option value="in">India</option>
+///   </optgroup>
+/// </select>
+///
+/// <!-- Products by category -->
+/// <label for="product">Choose product:</label>
+/// <select id="product" name="product">
+///   <optgroup label="Electronics">
+///     <option value="laptop">Laptop</option>
+///     <option value="phone">Smartphone</option>
+///   </optgroup>
+///   <optgroup label="Clothing">
+///     <option value="shirt">T-Shirt</option>
+///     <option value="jeans">Jeans</option>
+///   </optgroup>
+/// </select>
+///
+/// <!-- Disabled option group -->
+/// <label for="service">Service level:</label>
+/// <select id="service" name="service">
+///   <optgroup label="Available">
+///     <option value="basic">Basic</option>
+///     <option value="standard">Standard</option>
+///   </optgroup>
+///   <optgroup label="Premium Options" disabled>
+///     <option value="premium">Premium</option>
+///     <option value="enterprise">Enterprise</option>
+///   </optgroup>
+/// </select>
+///
+/// <!-- Time zones grouped -->
+/// <label for="timezone">Time zone:</label>
+/// <select id="timezone" name="timezone">
+///   <optgroup label="US Time Zones">
+///     <option value="est">Eastern</option>
+///     <option value="cst">Central</option>
+///     <option value="pst">Pacific</option>
+///   </optgroup>
+///   <optgroup label="European Time Zones">
+///     <option value="gmt">GMT</option>
+///     <option value="cet">CET</option>
+///   </optgroup>
+/// </select>
+/// ```
+///
+/// # Accessibility
+///
+/// - Group labels are announced by screen readers
+/// - Helps users understand option organization
+/// - Makes navigation easier in long lists
+/// - Ensure group labels are descriptive
+///
+/// # WHATWG Specification
+///
+/// - [4.10.9 The optgroup element](https://html.spec.whatwg.org/multipage/form-elements.html#the-optgroup-element)
 pub struct Optgroup;
 impl HtmlElement for Optgroup {
     const TAG: &'static str = "optgroup";
 }
 
-/// The `<option>` element - option.
+/// The `<option>` element - defines an option in a `<select>`, `<optgroup>`, or `<datalist>`.
+///
+/// # Purpose
+///
+/// The `<option>` element defines an individual option within a `<select>` element or
+/// suggestions within a `<datalist>` element. Each option represents a value that users
+/// can choose. The text content of the element is what users see, while the `value`
+/// attribute is what gets submitted with the form.
+///
+/// # Content Categories
+///
+/// - None (only valid within `<select>`, `<optgroup>`, or `<datalist>`)
+///
+/// # Permitted Content Model
+///
+/// - Text content (if `label` attribute is present, text is ignored)
+///
+/// # Common Use Cases
+///
+/// - Dropdown menu choices
+/// - Multi-select list items
+/// - Autocomplete suggestions
+/// - Combobox options
+/// - Form selection values
+///
+/// # Key Attributes
+///
+/// - `value`: Value submitted with the form (defaults to text content if not specified)
+/// - `selected`: Pre-selects this option
+/// - `disabled`: Disables this option
+/// - `label`: Alternative text for the option (overrides text content)
+///
+/// # Example
+///
+/// ```html
+/// <!-- Basic options -->
+/// <select name="color">
+///   <option value="red">Red</option>
+///   <option value="green">Green</option>
+///   <option value="blue">Blue</option>
+/// </select>
+///
+/// <!-- Option with selected attribute -->
+/// <select name="size">
+///   <option value="s">Small</option>
+///   <option value="m" selected>Medium</option>
+///   <option value="l">Large</option>
+/// </select>
+///
+/// <!-- Disabled option -->
+/// <select name="status">
+///   <option value="">Select status</option>
+///   <option value="active">Active</option>
+///   <option value="inactive" disabled>Inactive (unavailable)</option>
+/// </select>
+///
+/// <!-- Options with different display and value -->
+/// <select name="country">
+///   <option value="us">United States</option>
+///   <option value="uk">United Kingdom</option>
+///   <option value="ca">Canada</option>
+/// </select>
+///
+/// <!-- Option with label attribute -->
+/// <select name="product">
+///   <option value="prod1" label="Premium Widget">Premium Widget - $99</option>
+///   <option value="prod2" label="Basic Widget">Basic Widget - $49</option>
+/// </select>
+///
+/// <!-- Options in datalist -->
+/// <input list="browsers" name="browser">
+/// <datalist id="browsers">
+///   <option value="Chrome">Google Chrome</option>
+///   <option value="Firefox">Mozilla Firefox</option>
+///   <option value="Safari">Apple Safari</option>
+/// </datalist>
+///
+/// <!-- Placeholder option -->
+/// <select name="category" required>
+///   <option value="" disabled selected>-- Select category --</option>
+///   <option value="tech">Technology</option>
+///   <option value="health">Health</option>
+///   <option value="finance">Finance</option>
+/// </select>
+/// ```
+///
+/// # Accessibility
+///
+/// - Use clear, concise option text
+/// - Ensure value attributes are meaningful
+/// - Don't rely solely on color to distinguish options
+/// - Use disabled attribute instead of hiding options when appropriate
+/// - Provide a default/placeholder option for clarity
+///
+/// # WHATWG Specification
+///
+/// - [4.10.10 The option element](https://html.spec.whatwg.org/multipage/form-elements.html#the-option-element)
 pub struct Option_;
 impl HtmlElement for Option_ {
     const TAG: &'static str = "option";
 }
 
-/// The `<textarea>` element - multiline text input.
+/// The `<textarea>` element - represents a multi-line plain text editing control.
+///
+/// # Purpose
+///
+/// The `<textarea>` element provides a multi-line text input control for entering larger
+/// amounts of text. Unlike single-line `<input>` elements, textareas can contain multiple
+/// lines and typically show scroll bars when content exceeds the visible area. Essential
+/// for comments, descriptions, and longer form fields.
+///
+/// # Content Categories
+///
+/// - Flow Content
+/// - Phrasing Content
+/// - Interactive Content
+/// - Palpable Content
+///
+/// # Permitted Content Model
+///
+/// - Text content (no child elements)
+///
+/// # Common Use Cases
+///
+/// - Comment and feedback forms
+/// - Message composition areas
+/// - Description and bio fields
+/// - Code or text snippet input
+/// - Notes and memo fields
+///
+/// # Key Attributes
+///
+/// - `name`: Name for form submission
+/// - `rows`: Visible number of text lines
+/// - `cols`: Visible width in average character widths
+/// - `maxlength`: Maximum number of characters
+/// - `minlength`: Minimum number of characters
+/// - `placeholder`: Hint text when empty
+/// - `required`: Makes the field mandatory
+/// - `disabled`: Disables the control
+/// - `readonly`: Makes the field read-only
+/// - `autocomplete`: Autocomplete behavior
+/// - `wrap`: Text wrapping behavior ("soft" or "hard")
+/// - `spellcheck`: Enable spell checking
+/// - `form`: Associates with a form by ID
+///
+/// # Example
+///
+/// ```html
+/// <!-- Basic textarea -->
+/// <label for="message">Message:</label>
+/// <textarea id="message" name="message" rows="4" cols="50"></textarea>
+///
+/// <!-- Textarea with placeholder -->
+/// <label for="comment">Comment:</label>
+/// <textarea id="comment" name="comment" rows="5"
+///           placeholder="Enter your comment here..."></textarea>
+///
+/// <!-- Textarea with default value -->
+/// <label for="bio">Biography:</label>
+/// <textarea id="bio" name="bio" rows="6" cols="60">
+/// This is the default text that appears in the textarea.
+/// It can span multiple lines.
+/// </textarea>
+///
+/// <!-- Textarea with character limits -->
+/// <label for="tweet">Tweet (280 characters max):</label>
+/// <textarea id="tweet" name="tweet" rows="3" maxlength="280" required></textarea>
+///
+/// <!-- Readonly textarea -->
+/// <label for="terms">Terms and Conditions:</label>
+/// <textarea id="terms" rows="10" cols="80" readonly>
+/// Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+/// These terms cannot be edited.
+/// </textarea>
+///
+/// <!-- Textarea with hard wrap -->
+/// <label for="email-body">Email body:</label>
+/// <textarea id="email-body" name="body" rows="10" cols="72" wrap="hard"></textarea>
+///
+/// <!-- Disabled textarea -->
+/// <label for="status">Status:</label>
+/// <textarea id="status" rows="2" disabled>Processing...</textarea>
+///
+/// <!-- Textarea with spell check disabled -->
+/// <label for="code">Code snippet:</label>
+/// <textarea id="code" name="code" rows="8" spellcheck="false"
+///           style="font-family: monospace;"></textarea>
+/// ```
+///
+/// # Accessibility
+///
+/// - Always provide an associated `<label>`
+/// - Use `aria-describedby` for additional instructions
+/// - Provide clear character limits when applicable
+/// - Ensure sufficient size for expected content
+/// - Consider resize behavior for user control
+/// - Use `placeholder` for hints, not instructions
+/// - Ensure adequate color contrast
+///
+/// # WHATWG Specification
+///
+/// - [4.10.11 The textarea element](https://html.spec.whatwg.org/multipage/form-elements.html#the-textarea-element)
 pub struct Textarea;
 impl HtmlElement for Textarea {
     const TAG: &'static str = "textarea";
@@ -4211,7 +7581,92 @@ impl PhrasingContent for Textarea {}
 impl InteractiveContent for Textarea {}
 impl PalpableContent for Textarea {}
 
-/// The `<output>` element - calculation result.
+/// The `<output>` element - represents the result of a calculation or user action.
+///
+/// # Purpose
+///
+/// The `<output>` element represents the result of a calculation, user action, or the
+/// outcome of a script execution. It's specifically designed to display computed values
+/// and results, typically from form calculations or JavaScript operations. Different from
+/// regular text in that it semantically indicates generated output.
+///
+/// # Content Categories
+///
+/// - Flow Content
+/// - Phrasing Content
+/// - Palpable Content
+///
+/// # Permitted Content Model
+///
+/// - Phrasing content
+///
+/// # Common Use Cases
+///
+/// - Displaying calculation results in forms
+/// - Showing real-time computed values
+/// - Range slider value displays
+/// - Form validation feedback
+/// - Shopping cart totals and summaries
+///
+/// # Key Attributes
+///
+/// - `for`: Space-separated list of IDs of elements that contributed to the calculation
+/// - `form`: Associates with a form by ID
+/// - `name`: Name for form submission
+///
+/// # Example
+///
+/// ```html
+/// <!-- Calculator result -->
+/// <form oninput="result.value = parseInt(a.value) + parseInt(b.value)">
+///   <input type="number" id="a" value="0"> +
+///   <input type="number" id="b" value="0"> =
+///   <output name="result" for="a b">0</output>
+/// </form>
+///
+/// <!-- Range slider value display -->
+/// <label for="volume">Volume:</label>
+/// <input type="range" id="volume" min="0" max="100" value="50"
+///        oninput="volumeOutput.value = this.value">
+/// <output id="volumeOutput" for="volume">50</output>
+///
+/// <!-- Price calculator -->
+/// <form oninput="total.value = (quantity.value * 10).toFixed(2)">
+///   <label for="quantity">Quantity:</label>
+///   <input type="number" id="quantity" name="quantity" value="1" min="1">
+///   <p>Price per item: $10.00</p>
+///   <p>Total: $<output name="total" for="quantity">10.00</output></p>
+/// </form>
+///
+/// <!-- BMI Calculator -->
+/// <form oninput="bmi.value = (weight.value / ((height.value / 100) ** 2)).toFixed(1)">
+///   <label for="weight">Weight (kg):</label>
+///   <input type="number" id="weight" value="70">
+///   
+///   <label for="height">Height (cm):</label>
+///   <input type="number" id="height" value="175">
+///   
+///   <p>BMI: <output name="bmi" for="weight height">22.9</output></p>
+/// </form>
+///
+/// <!-- Form validation summary -->
+/// <form>
+///   <input type="email" id="email" required>
+///   <output for="email" id="emailStatus"></output>
+/// </form>
+/// ```
+///
+/// # Accessibility
+///
+/// - Output values are announced by screen readers when changed
+/// - Use `aria-live="polite"` for important dynamic updates
+/// - Ensure output is clearly associated with input controls via `for` attribute
+/// - Provide context for what the output represents
+/// - Make output values visually distinct
+///
+/// # WHATWG Specification
+///
+/// - [4.10.12 The output element](https://html.spec.whatwg.org/multipage/form-elements.html#the-output-element)
 pub struct Output;
 impl HtmlElement for Output {
     const TAG: &'static str = "output";
@@ -4220,7 +7675,97 @@ impl FlowContent for Output {}
 impl PhrasingContent for Output {}
 impl PalpableContent for Output {}
 
-/// The `<progress>` element - progress indicator.
+/// The `<progress>` element - represents the completion progress of a task.
+///
+/// # Purpose
+///
+/// The `<progress>` element displays the progress of a task, such as a file upload, download,
+/// or form completion. Shows a progress bar indicating how much of the task has been completed.
+/// Can represent both determinate (known total) and indeterminate (unknown total) progress.
+///
+/// # Content Categories
+///
+/// - Flow Content
+/// - Phrasing Content
+/// - Palpable Content
+///
+/// # Permitted Content Model
+///
+/// - Phrasing content (fallback for browsers without progress support, but no `<progress>` descendants)
+///
+/// # Common Use Cases
+///
+/// - File upload progress indicators
+/// - Download progress displays
+/// - Form completion tracking
+/// - Multi-step process progress
+/// - Loading indicators with known duration
+///
+/// # Key Attributes
+///
+/// - `value`: Current progress value
+/// - `max`: Maximum value (total amount of work, default: 1.0)
+///
+/// # Example
+///
+/// ```html
+/// <!-- Basic progress bar -->
+/// <label for="file-progress">Uploading file:</label>
+/// <progress id="file-progress" value="70" max="100">70%</progress>
+///
+/// <!-- Progress with percentage label -->
+/// <p>
+///   Installation progress:
+///   <progress value="0.6" max="1.0">60%</progress>
+///   60%
+/// </p>
+///
+/// <!-- Indeterminate progress (no value attribute) -->
+/// <p>
+///   Loading...
+///   <progress max="100">Loading...</progress>
+/// </p>
+///
+/// <!-- Progress updated via JavaScript -->
+/// <progress id="dynamic-progress" value="0" max="100"></progress>
+/// <script>
+///   let progress = 0;
+///   setInterval(() => {
+///     progress = Math.min(progress + 10, 100);
+///     document.getElementById('dynamic-progress').value = progress;
+///   }, 500);
+/// </script>
+///
+/// <!-- Download progress -->
+/// <p>
+///   Downloading: <span id="filename">document.pdf</span>
+///   <progress id="download" value="2.5" max="10">2.5 MB of 10 MB</progress>
+///   <span id="progress-text">2.5 MB of 10 MB</span>
+/// </p>
+///
+/// <!-- Form completion indicator -->
+/// <form>
+///   <p>Form completion: <progress value="3" max="5">Step 3 of 5</progress></p>
+///   <!-- Form fields here -->
+/// </form>
+///
+/// <!-- Styled progress bar -->
+/// <progress value="75" max="100" style="width: 300px; height: 30px;">
+///   75% complete
+/// </progress>
+/// ```
+///
+/// # Accessibility
+///
+/// - Provide text content as fallback for older browsers
+/// - Use `aria-label` or nearby text to describe what's progressing
+/// - Update `aria-valuenow`, `aria-valuemin`, `aria-valuemax` for complex cases
+/// - Announce progress updates to screen readers with aria-live regions
+/// - Ensure progress bar has sufficient color contrast
+///
+/// # WHATWG Specification
+///
+/// - [4.10.13 The progress element](https://html.spec.whatwg.org/multipage/form-elements.html#the-progress-element)
 pub struct Progress;
 impl HtmlElement for Progress {
     const TAG: &'static str = "progress";
@@ -4229,7 +7774,109 @@ impl FlowContent for Progress {}
 impl PhrasingContent for Progress {}
 impl PalpableContent for Progress {}
 
-/// The `<meter>` element - scalar measurement.
+/// The `<meter>` element - represents a scalar measurement within a known range.
+///
+/// # Purpose
+///
+/// The `<meter>` element represents a scalar measurement within a known range, or a fractional
+/// value. Used for displaying measurements like disk usage, voting results, relevance scores,
+/// or any gauge-style indicator. Unlike `<progress>`, which shows task completion, `<meter>`
+/// shows a measurement on a scale.
+///
+/// # Content Categories
+///
+/// - Flow Content
+/// - Phrasing Content
+/// - Palpable Content
+///
+/// # Permitted Content Model
+///
+/// - Phrasing content (fallback for browsers without meter support, but no `<meter>` descendants)
+///
+/// # Common Use Cases
+///
+/// - Disk space usage indicators
+/// - Battery level displays
+/// - Rating or scoring displays
+/// - Temperature or volume gauges
+/// - Relevance or match percentages
+///
+/// # Key Attributes
+///
+/// - `value`: Current value (required)
+/// - `min`: Lower bound of range (default: 0)
+/// - `max`: Upper bound of range (default: 1)
+/// - `low`: Upper bound of "low" range
+/// - `high`: Lower bound of "high" range
+/// - `optimum`: Optimal value in the range
+///
+/// # Example
+///
+/// ```html
+/// <!-- Basic meter -->
+/// <label for="disk-usage">Disk usage:</label>
+/// <meter id="disk-usage" value="0.6">60%</meter>
+///
+/// <!-- Meter with full range specification -->
+/// <label for="battery">Battery level:</label>
+/// <meter id="battery"
+///        min="0" max="100"
+///        low="20" high="80"
+///        optimum="100"
+///        value="65">65%</meter>
+///
+/// <!-- High value is bad (e.g., CPU usage) -->
+/// <label for="cpu">CPU usage:</label>
+/// <meter id="cpu"
+///        min="0" max="100"
+///        low="25" high="75"
+///        optimum="0"
+///        value="85">85%</meter>
+///
+/// <!-- Low value is bad (e.g., fuel) -->
+/// <label for="fuel">Fuel level:</label>
+/// <meter id="fuel"
+///        min="0" max="100"
+///        low="20" high="80"
+///        optimum="100"
+///        value="15">15%</meter>
+///
+/// <!-- Rating display -->
+/// <p>
+///   Rating:
+///   <meter min="0" max="5" value="4.2">4.2 out of 5</meter>
+///   4.2 out of 5 stars
+/// </p>
+///
+/// <!-- Storage usage -->
+/// <p>
+///   Storage used:
+///   <meter min="0" max="1000" low="700" high="900" value="852">
+///     852 GB of 1000 GB
+///   </meter>
+///   852 GB / 1 TB
+/// </p>
+///
+/// <!-- Temperature gauge -->
+/// <label for="temp">Room temperature:</label>
+/// <meter id="temp"
+///        min="0" max="50"
+///        low="18" high="28"
+///        optimum="22"
+///        value="25">25°C</meter>
+/// ```
+///
+/// # Accessibility
+///
+/// - Provide text content as fallback
+/// - Use labels to describe what's being measured
+/// - Ensure color isn't the only indicator of status
+/// - Browser typically colors the meter based on value ranges
+/// - Screen readers announce the value and context
+///
+/// # WHATWG Specification
+///
+/// - [4.10.14 The meter element](https://html.spec.whatwg.org/multipage/form-elements.html#the-meter-element)
 pub struct Meter;
 impl HtmlElement for Meter {
     const TAG: &'static str = "meter";
@@ -4238,7 +7885,122 @@ impl FlowContent for Meter {}
 impl PhrasingContent for Meter {}
 impl PalpableContent for Meter {}
 
-/// The `<fieldset>` element - form field group.
+/// The `<fieldset>` element - groups related form controls and labels.
+///
+/// # Purpose
+///
+/// The `<fieldset>` element groups related form controls and labels within a form. Provides
+/// semantic grouping and visual separation of form sections. Can be disabled as a group,
+/// affecting all contained controls. Typically rendered with a border around the grouped
+/// elements.
+///
+/// # Content Categories
+///
+/// - Flow Content
+/// - Palpable Content
+///
+/// # Permitted Content Model
+///
+/// - Optionally a `<legend>` element (must be first child)
+/// - Followed by flow content
+///
+/// # Common Use Cases
+///
+/// - Grouping personal information fields
+/// - Grouping address fields
+/// - Grouping related checkboxes or radio buttons
+/// - Creating form sections with logical divisions
+/// - Disabling multiple controls at once
+///
+/// # Key Attributes
+///
+/// - `disabled`: Disables all form controls within the fieldset
+/// - `form`: Associates with a form by ID
+/// - `name`: Name for the fieldset (for scripting purposes)
+///
+/// # Example
+///
+/// ```html
+/// <!-- Basic fieldset with legend -->
+/// <fieldset>
+///   <legend>Personal Information</legend>
+///   <label for="fname">First name:</label>
+///   <input type="text" id="fname" name="fname">
+///   
+///   <label for="lname">Last name:</label>
+///   <input type="text" id="lname" name="lname">
+/// </fieldset>
+///
+/// <!-- Radio button group -->
+/// <fieldset>
+///   <legend>Choose your preferred contact method:</legend>
+///   <input type="radio" id="email" name="contact" value="email">
+///   <label for="email">Email</label>
+///   
+///   <input type="radio" id="phone" name="contact" value="phone">
+///   <label for="phone">Phone</label>
+///   
+///   <input type="radio" id="mail" name="contact" value="mail">
+///   <label for="mail">Mail</label>
+/// </fieldset>
+///
+/// <!-- Address fieldset -->
+/// <fieldset>
+///   <legend>Billing Address</legend>
+///   <label for="street">Street:</label>
+///   <input type="text" id="street" name="street">
+///   
+///   <label for="city">City:</label>
+///   <input type="text" id="city" name="city">
+///   
+///   <label for="zip">ZIP Code:</label>
+///   <input type="text" id="zip" name="zip">
+/// </fieldset>
+///
+/// <!-- Disabled fieldset -->
+/// <fieldset disabled>
+///   <legend>Advanced Settings (Coming Soon)</legend>
+///   <label for="option1">Option 1:</label>
+///   <input type="checkbox" id="option1" name="option1">
+///   
+///   <label for="option2">Option 2:</label>
+///   <input type="checkbox" id="option2" name="option2">
+/// </fieldset>
+///
+/// <!-- Nested fieldsets -->
+/// <form>
+///   <fieldset>
+///     <legend>Account Information</legend>
+///     
+///     <fieldset>
+///       <legend>Login Credentials</legend>
+///       <label for="user">Username:</label>
+///       <input type="text" id="user" name="username">
+///       
+///       <label for="pass">Password:</label>
+///       <input type="password" id="pass" name="password">
+///     </fieldset>
+///     
+///     <fieldset>
+///       <legend>Contact Details</legend>
+///       <label for="email">Email:</label>
+///       <input type="email" id="email" name="email">
+///     </fieldset>
+///   </fieldset>
+/// </form>
+/// ```
+///
+/// # Accessibility
+///
+/// - Use `<legend>` to provide a clear group label
+/// - Legends are announced by screen readers when entering the fieldset
+/// - Helps users understand form structure and relationships
+/// - Disabled fieldsets clearly indicate unavailable sections
+/// - Ensure legends are concise and descriptive
+///
+/// # WHATWG Specification
+///
+/// - [4.10.15 The fieldset element](https://html.spec.whatwg.org/multipage/form-elements.html#the-fieldset-element)
 pub struct Fieldset;
 impl HtmlElement for Fieldset {
     const TAG: &'static str = "fieldset";
@@ -4246,7 +8008,108 @@ impl HtmlElement for Fieldset {
 impl FlowContent for Fieldset {}
 impl PalpableContent for Fieldset {}
 
-/// The `<legend>` element - fieldset caption.
+/// The `<legend>` element - represents a caption for a `<fieldset>`.
+///
+/// # Purpose
+///
+/// The `<legend>` element provides a caption or title for its parent `<fieldset>` element.
+/// It describes the group of form controls contained within the fieldset. Must be the first
+/// child of the fieldset if present. Typically displayed as a title positioned on the border
+/// of the fieldset.
+///
+/// # Content Categories
+///
+/// - None (only valid as first child of `<fieldset>`)
+///
+/// # Permitted Content Model
+///
+/// - Phrasing content
+/// - Optionally intermixed with heading content
+///
+/// # Common Use Cases
+///
+/// - Labeling form sections
+/// - Describing groups of radio buttons or checkboxes
+/// - Titling address or contact information groups
+/// - Naming configuration sections
+/// - Providing context for related form fields
+///
+/// # Key Attributes
+///
+/// - Global attributes only
+///
+/// # Example
+///
+/// ```html
+/// <!-- Basic legend -->
+/// <fieldset>
+///   <legend>Personal Details</legend>
+///   <label for="name">Name:</label>
+///   <input type="text" id="name" name="name">
+/// </fieldset>
+///
+/// <!-- Legend for radio button group -->
+/// <fieldset>
+///   <legend>Select your subscription plan:</legend>
+///   <input type="radio" id="basic" name="plan" value="basic">
+///   <label for="basic">Basic - $9.99/mo</label>
+///   
+///   <input type="radio" id="premium" name="plan" value="premium">
+///   <label for="premium">Premium - $19.99/mo</label>
+/// </fieldset>
+///
+/// <!-- Legend with emphasis -->
+/// <fieldset>
+///   <legend><strong>Required Information</strong></legend>
+///   <label for="email">Email:</label>
+///   <input type="email" id="email" name="email" required>
+/// </fieldset>
+///
+/// <!-- Legend with additional context -->
+/// <fieldset>
+///   <legend>
+///     Shipping Address
+///     <small>(where should we deliver your order?)</small>
+///   </legend>
+///   <label for="address">Address:</label>
+///   <input type="text" id="address" name="address">
+/// </fieldset>
+///
+/// <!-- Legend for checkbox group -->
+/// <fieldset>
+///   <legend>Select your interests:</legend>
+///   <input type="checkbox" id="sports" name="interests" value="sports">
+///   <label for="sports">Sports</label>
+///   
+///   <input type="checkbox" id="music" name="interests" value="music">
+///   <label for="music">Music</label>
+///   
+///   <input type="checkbox" id="reading" name="interests" value="reading">
+///   <label for="reading">Reading</label>
+/// </fieldset>
+///
+/// <!-- Legend for payment information -->
+/// <fieldset>
+///   <legend>Payment Information</legend>
+///   <label for="card">Card Number:</label>
+///   <input type="text" id="card" name="card-number">
+///   
+///   <label for="expiry">Expiry Date:</label>
+///   <input type="text" id="expiry" name="expiry">
+/// </fieldset>
+/// ```
+///
+/// # Accessibility
+///
+/// - Legends are announced by screen readers when users enter the fieldset
+/// - Provides important context for form field groups
+/// - Keep legend text concise and descriptive
+/// - Use heading elements within legend sparingly
+/// - Helps users understand the purpose of grouped fields
+///
+/// # WHATWG Specification
+///
+/// - [4.10.16 The legend element](https://html.spec.whatwg.org/multipage/form-elements.html#the-legend-element)
 pub struct Legend;
 impl HtmlElement for Legend {
     const TAG: &'static str = "legend";
@@ -4256,7 +8119,129 @@ impl HtmlElement for Legend {
 // Interactive Elements
 // =============================================================================
 
-/// The `<details>` element - disclosure widget.
+/// The `<details>` element - represents a disclosure widget from which the user can obtain additional information.
+///
+/// # Purpose
+///
+/// The `<details>` element creates a disclosure widget that users can open and close to
+/// reveal or hide additional content. Provides built-in interactive functionality without
+/// JavaScript. The first child should be a `<summary>` element that serves as the toggle label.
+///
+/// # Content Categories
+///
+/// - Flow Content
+/// - Interactive Content
+/// - Palpable Content
+///
+/// # Permitted Content Model
+///
+/// - One `<summary>` element (as first child)
+/// - Followed by flow content
+///
+/// # Common Use Cases
+///
+/// - FAQ (Frequently Asked Questions) sections
+/// - Accordion-style content
+/// - Progressive disclosure of information
+/// - Collapsible content sections
+/// - Show/hide additional details
+///
+/// # Key Attributes
+///
+/// - `open`: Makes the details visible by default
+///
+/// # Example
+///
+/// ```html
+/// <!-- Basic details element -->
+/// <details>
+///   <summary>Click to expand</summary>
+///   <p>This is the hidden content that appears when you click the summary.</p>
+/// </details>
+///
+/// <!-- FAQ item -->
+/// <details>
+///   <summary>What is HTML?</summary>
+///   <p>HTML (HyperText Markup Language) is the standard markup language for creating web pages.</p>
+/// </details>
+///
+/// <!-- Details open by default -->
+/// <details open>
+///   <summary>Important Information</summary>
+///   <p>This section is expanded by default because of the 'open' attribute.</p>
+/// </details>
+///
+/// <!-- Multiple details forming an accordion -->
+/// <details>
+///   <summary>Section 1: Introduction</summary>
+///   <p>This is the introduction section with detailed information.</p>
+/// </details>
+/// <details>
+///   <summary>Section 2: Features</summary>
+///   <ul>
+///     <li>Feature A</li>
+///     <li>Feature B</li>
+///     <li>Feature C</li>
+///   </ul>
+/// </details>
+/// <details>
+///   <summary>Section 3: Conclusion</summary>
+///   <p>Final thoughts and summary.</p>
+/// </details>
+///
+/// <!-- Details with rich content -->
+/// <details>
+///   <summary>View shipping options</summary>
+///   <table>
+///     <thead>
+///       <tr>
+///         <th>Method</th>
+///         <th>Time</th>
+///         <th>Cost</th>
+///       </tr>
+///     </thead>
+///     <tbody>
+///       <tr>
+///         <td>Standard</td>
+///         <td>5-7 days</td>
+///         <td>$5.99</td>
+///       </tr>
+///       <tr>
+///         <td>Express</td>
+///         <td>2-3 days</td>
+///         <td>$12.99</td>
+///       </tr>
+///     </tbody>
+///   </table>
+/// </details>
+///
+/// <!-- Nested details -->
+/// <details>
+///   <summary>Chapter 1</summary>
+///   <p>Chapter introduction...</p>
+///   <details>
+///     <summary>Section 1.1</summary>
+///     <p>Detailed content for section 1.1</p>
+///   </details>
+///   <details>
+///     <summary>Section 1.2</summary>
+///     <p>Detailed content for section 1.2</p>
+///   </details>
+/// </details>
+/// ```
+///
+/// # Accessibility
+///
+/// - Keyboard accessible by default (Space/Enter to toggle)
+/// - Screen readers announce the collapsed/expanded state
+/// - Use descriptive summary text
+/// - Ensure content within is properly structured
+/// - Consider adding visual indicators for state
+/// - Works without JavaScript
+///
+/// # WHATWG Specification
+///
+/// - [4.11.1 The details element](https://html.spec.whatwg.org/multipage/interactive-elements.html#the-details-element)
 pub struct Details;
 impl HtmlElement for Details {
     const TAG: &'static str = "details";
@@ -4265,13 +8250,233 @@ impl FlowContent for Details {}
 impl InteractiveContent for Details {}
 impl PalpableContent for Details {}
 
-/// The `<summary>` element - details summary.
+/// The `<summary>` element - represents a summary, caption, or legend for a `<details>` element.
+///
+/// # Purpose
+///
+/// The `<summary>` element provides a visible heading or label for its parent `<details>`
+/// element. Users click the summary to toggle the visibility of the details content. Acts
+/// as the disclosure button/trigger. If omitted, browser provides a default label like
+/// "Details".
+///
+/// # Content Categories
+///
+/// - None (only valid as first child of `<details>`)
+///
+/// # Permitted Content Model
+///
+/// - Phrasing content
+/// - Optionally intermixed with heading content
+///
+/// # Common Use Cases
+///
+/// - FAQ question labels
+/// - Accordion section titles
+/// - Toggle button labels
+/// - Expandable content headings
+/// - Show/hide trigger text
+///
+/// # Key Attributes
+///
+/// - Global attributes only
+///
+/// # Example
+///
+/// ```html
+/// <!-- Simple summary -->
+/// <details>
+///   <summary>Click to reveal answer</summary>
+///   <p>This is the answer to the question.</p>
+/// </details>
+///
+/// <!-- Summary with icon/emoji -->
+/// <details>
+///   <summary>📋 View Details</summary>
+///   <p>Additional information here.</p>
+/// </details>
+///
+/// <!-- Summary with styled text -->
+/// <details>
+///   <summary><strong>Important Notice</strong></summary>
+///   <p>Please read this important information carefully.</p>
+/// </details>
+///
+/// <!-- Summary for FAQ -->
+/// <details>
+///   <summary>How do I reset my password?</summary>
+///   <ol>
+///     <li>Click on "Forgot Password"</li>
+///     <li>Enter your email address</li>
+///     <li>Check your email for reset link</li>
+///   </ol>
+/// </details>
+///
+/// <!-- Summary with heading -->
+/// <details>
+///   <summary><h3>Chapter 1: Introduction</h3></summary>
+///   <p>Chapter content goes here...</p>
+/// </details>
+///
+/// <!-- Summary with additional context -->
+/// <details>
+///   <summary>
+///     Product Specifications
+///     <small>(click to expand)</small>
+///   </summary>
+///   <ul>
+///     <li>Weight: 2.5 kg</li>
+///     <li>Dimensions: 30cm x 20cm x 10cm</li>
+///     <li>Material: Aluminum</li>
+///   </ul>
+/// </details>
+///
+/// <!-- Summary with custom styling -->
+/// <details>
+///   <summary style="cursor: pointer; color: #0066cc;">
+///     ► Show More Information
+///   </summary>
+///   <p>Hidden content revealed on click.</p>
+/// </details>
+/// ```
+///
+/// # Accessibility
+///
+/// - Acts as a button control, automatically keyboard accessible
+/// - Screen readers announce it as a button with expanded/collapsed state
+/// - Use descriptive text that clearly indicates what will be revealed
+/// - Ensure summary is meaningful when read alone
+/// - Avoid generic text like "Click here" or "More"
+/// - Browser typically adds a disclosure triangle/arrow indicator
+///
+/// # WHATWG Specification
+///
+/// - [4.11.2 The summary element](https://html.spec.whatwg.org/multipage/interactive-elements.html#the-summary-element)
 pub struct Summary;
 impl HtmlElement for Summary {
     const TAG: &'static str = "summary";
 }
 
-/// The `<dialog>` element - dialog box.
+/// The `<dialog>` element - represents a dialog box or other interactive component.
+///
+/// # Purpose
+///
+/// The `<dialog>` element represents a dialog box, modal, or subwindow that overlays the
+/// main content. Can be shown modally (blocking interaction with the rest of the page) or
+/// non-modally. Provides built-in functionality for overlays, keyboard management (ESC to
+/// close), and focus trapping without requiring JavaScript libraries.
+///
+/// # Content Categories
+///
+/// - Flow Content
+///
+/// # Permitted Content Model
+///
+/// - Flow content
+///
+/// # Common Use Cases
+///
+/// - Modal confirmation dialogs
+/// - Alert and notification popups
+/// - Login and signup forms
+/// - Settings and preferences panels
+/// - Image lightboxes and galleries
+///
+/// # Key Attributes
+///
+/// - `open`: Makes the dialog visible (use JavaScript's show() or showModal() methods instead)
+///
+/// # Example
+///
+/// ```html
+/// <!-- Basic dialog -->
+/// <dialog id="myDialog">
+///   <h2>Dialog Title</h2>
+///   <p>This is a dialog box.</p>
+///   <button onclick="this.closest('dialog').close()">Close</button>
+/// </dialog>
+/// <button onclick="document.getElementById('myDialog').showModal()">Open Dialog</button>
+///
+/// <!-- Confirmation dialog -->
+/// <dialog id="confirmDialog">
+///   <form method="dialog">
+///     <h2>Confirm Action</h2>
+///     <p>Are you sure you want to proceed?</p>
+///     <button value="cancel">Cancel</button>
+///     <button value="confirm">Confirm</button>
+///   </form>
+/// </dialog>
+///
+/// <!-- Login dialog -->
+/// <dialog id="loginDialog">
+///   <h2>Log In</h2>
+///   <form method="dialog">
+///     <label for="username">Username:</label>
+///     <input type="text" id="username" name="username" required>
+///     
+///     <label for="password">Password:</label>
+///     <input type="password" id="password" name="password" required>
+///     
+///     <button type="submit">Log In</button>
+///     <button type="button" onclick="this.closest('dialog').close()">Cancel</button>
+///   </form>
+/// </dialog>
+///
+/// <!-- Dialog with backdrop -->
+/// <dialog id="modalDialog">
+///   <h2>Modal Dialog</h2>
+///   <p>This dialog blocks interaction with the rest of the page.</p>
+///   <button onclick="document.getElementById('modalDialog').close()">Close</button>
+/// </dialog>
+/// <button onclick="document.getElementById('modalDialog').showModal()">Show Modal</button>
+///
+/// <!-- Alert dialog -->
+/// <dialog id="alertDialog">
+///   <div role="alert">
+///     <h2>Warning!</h2>
+///     <p>This action cannot be undone.</p>
+///     <button onclick="this.closest('dialog').close()">OK</button>
+///   </div>
+/// </dialog>
+///
+/// <!-- Non-modal dialog -->
+/// <dialog id="nonModalDialog">
+///   <h2>Non-Modal Dialog</h2>
+///   <p>You can still interact with the page behind this dialog.</p>
+///   <button onclick="this.closest('dialog').close()">Close</button>
+/// </dialog>
+/// <button onclick="document.getElementById('nonModalDialog').show()">Show Non-Modal</button>
+///
+/// <!-- Dialog with return value -->
+/// <dialog id="colorDialog">
+///   <form method="dialog">
+///     <h2>Choose a color</h2>
+///     <button value="red">Red</button>
+///     <button value="blue">Blue</button>
+///     <button value="green">Green</button>
+///   </form>
+/// </dialog>
+/// <script>
+///   const dialog = document.getElementById('colorDialog');
+///   dialog.addEventListener('close', () => {
+///     console.log('Selected color:', dialog.returnValue);
+///   });
+/// </script>
+/// ```
+///
+/// # Accessibility
+///
+/// - Focus is automatically moved to the dialog when opened with showModal()
+/// - ESC key closes modal dialogs by default
+/// - Backdrop click behavior can be customized
+/// - Use appropriate ARIA roles (role="dialog" or role="alertdialog")
+/// - Provide clear close mechanisms
+/// - Ensure focus returns to triggering element on close
+/// - Use `aria-labelledby` or `aria-label` to identify the dialog
+/// - Trap focus within modal dialogs
+///
+/// # WHATWG Specification
+///
+/// - [4.11.3 The dialog element](https://html.spec.whatwg.org/multipage/interactive-elements.html#the-dialog-element)
 pub struct Dialog;
 impl HtmlElement for Dialog {
     const TAG: &'static str = "dialog";
