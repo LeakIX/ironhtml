@@ -3,17 +3,25 @@ resolver = "2"
 members = ["crates/*"]
 
 [workspace.package]
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
 license = "MIT"
-repository = "https://github.com/LeakIX/html-builder"
+repository = "https://github.com/LeakIX/ironhtml"
 
 [workspace.dependencies]
-html-elements = { path = "crates/html-elements" }
-html-attributes = { path = "crates/html-attributes" }
-html-builder = { path = "crates/html-builder" }
-html-macro = { path = "crates/html-macro" }
-html-bootstrap = { path = "crates/html-bootstrap" }
+ironhtml-elements = { path = "crates/ironhtml-elements" }
+ironhtml-attributes = { path = "crates/ironhtml-attributes" }
+ironhtml = { path = "crates/ironhtml" }
+ironhtml-macro = { path = "crates/ironhtml-macro" }
+ironhtml-bootstrap = { path = "crates/ironhtml-bootstrap" }
 proc-macro2 = "1"
 quote = "1"
 syn = { version = "2", features = ["full", "parsing", "extra-traits"] }
+
+[workspace.lints.rust]
+unsafe_code = "deny"
+
+[workspace.lints.clippy]
+all = { level = "deny", priority = -1 }
+pedantic = { level = "deny", priority = -1 }
+nursery = { level = "deny", priority = -1 }

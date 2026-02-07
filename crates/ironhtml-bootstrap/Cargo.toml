@@ -1,0 +1,21 @@
+[package]
+name = "ironhtml-bootstrap"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Type-safe Bootstrap 5.3 components for ironhtml"
+keywords = ["html", "bootstrap", "components"]
+categories = ["web-programming"]
+
+[lints]
+workspace = true
+
+[dependencies]
+ironhtml.workspace = true
+ironhtml-elements.workspace = true
+ironhtml-macro.workspace = true
+
+[features]
+default = ["v5"]
+v5 = []
