@@ -1,4 +1,4 @@
-# html-builder - Makefile
+# ironhtml - Makefile
 
 # =============================================================================
 # Configuration
@@ -36,7 +36,7 @@ build-wasm: ## Build for WebAssembly target
 build-examples: ## Build and run all examples
 	@echo "Building examples..."
 	$(CARGO) build --examples
-	@echo "Running html-bootstrap examples..."
+	@echo "Running ironhtml-bootstrap examples..."
 	$(CARGO) run --example landing_page > /dev/null
 	$(CARGO) run --example wallet_dashboard > /dev/null
 	$(CARGO) run --example bootstrap_docs > /dev/null

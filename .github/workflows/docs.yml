@@ -28,7 +28,7 @@ jobs:
         run: make doc
 
       - name: Create index.html redirect
-        run: echo '<meta http-equiv="refresh" content="0; url=html_builder/">' > target/doc/index.html
+        run: echo '<meta http-equiv="refresh" content="0; url=ironhtml/">' > target/doc/index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
