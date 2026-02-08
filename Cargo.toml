@@ -11,11 +11,11 @@ repository = "https://github.com/LeakIX/ironhtml"
 readme = "README.md"
 
 [workspace.dependencies]
-ironhtml-elements = { path = "crates/ironhtml-elements" }
-ironhtml-attributes = { path = "crates/ironhtml-attributes" }
-ironhtml = { path = "crates/ironhtml" }
-ironhtml-macro = { path = "crates/ironhtml-macro" }
-ironhtml-bootstrap = { path = "crates/ironhtml-bootstrap" }
+ironhtml-elements = { version = "1", path = "crates/ironhtml-elements" }
+ironhtml-attributes = { version = "1", path = "crates/ironhtml-attributes" }
+ironhtml = { version = "1", path = "crates/ironhtml" }
+ironhtml-macro = { version = "1", path = "crates/ironhtml-macro" }
+ironhtml-bootstrap = { version = "1", path = "crates/ironhtml-bootstrap" }
 proc-macro2 = "1"
 quote = "1"
 syn = { version = "2", features = ["full", "parsing", "extra-traits"] }
