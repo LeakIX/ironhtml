@@ -74,6 +74,15 @@ impl TailwindClass for BorderWidth {
 }
 
 /// Border color utilities (same as text colors)
+///
+/// Color shades should use standard Tailwind values:
+/// - 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950
+///
+/// Example:
+/// ```
+/// use ironhtml_tailwind::BorderColor;
+/// let color = BorderColor::Gray(300);  // border-gray-300
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BorderColor {
     Slate(u16),

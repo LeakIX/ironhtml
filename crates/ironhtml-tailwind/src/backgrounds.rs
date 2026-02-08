@@ -5,6 +5,15 @@ use alloc::format;
 use alloc::string::String;
 
 /// Background color utilities
+///
+/// Color shades should use standard Tailwind values:
+/// - 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950
+///
+/// Example:
+/// ```
+/// use ironhtml_tailwind::BackgroundColor;
+/// let color = BackgroundColor::Blue(500);  // bg-blue-500
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BackgroundColor {
     Slate(u16),

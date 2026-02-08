@@ -97,6 +97,15 @@ impl TailwindClass for TextAlign {
 }
 
 /// Text color utilities
+///
+/// Color shades should use standard Tailwind values:
+/// - 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950
+///
+/// Example:
+/// ```
+/// use ironhtml_tailwind::TextColor;
+/// let color = TextColor::Blue(500);  // text-blue-500
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TextColor {
     // Slate
