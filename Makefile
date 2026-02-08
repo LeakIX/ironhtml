@@ -97,6 +97,10 @@ lint: ## Lint all code with clippy
 	@echo "Linting..."
 	$(CARGO) clippy --all-targets -- -D warnings
 
+.PHONY: lint-shell
+lint-shell: ## Lint shell scripts using shellcheck
+	shellcheck .github/scripts/*.sh
+
 # =============================================================================
 # Testing
 # =============================================================================
