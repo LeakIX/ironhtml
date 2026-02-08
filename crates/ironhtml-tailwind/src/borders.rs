@@ -149,6 +149,8 @@ impl TailwindClass for BorderColor {
 }
 
 /// Border radius utilities
+///
+/// See [Tailwind CSS Border Radius Documentation](https://tailwindcss.com/docs/border-radius)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BorderRadius {
     /// rounded-none

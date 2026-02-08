@@ -24,6 +24,8 @@ impl TailwindClass for FlexDirection {
 }
 
 /// Justify content utilities
+///
+/// See [Tailwind CSS Justify Content Documentation](https://tailwindcss.com/docs/justify-content)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum JustifyContent {
     Start,
@@ -50,6 +52,8 @@ impl TailwindClass for JustifyContent {
 }
 
 /// Align items utilities
+///
+/// See [Tailwind CSS Align Items Documentation](https://tailwindcss.com/docs/align-items)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AlignItems {
     Start,

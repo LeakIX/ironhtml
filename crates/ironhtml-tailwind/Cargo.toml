@@ -12,5 +12,5 @@ categories = ["web-programming"]
 workspace = true
 
 [dependencies]
-ironhtml.workspace = true
+ironhtml = { workspace = true, features = ["macros"] }
 ironhtml-elements.workspace = true

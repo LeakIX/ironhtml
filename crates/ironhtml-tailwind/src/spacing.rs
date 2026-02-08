@@ -26,6 +26,8 @@ pub enum Padding {
 }
 
 /// Margin utilities (m-*, mx-*, my-*, mt-*, mb-*, ml-*, mr-*)
+///
+/// See [Tailwind CSS Margin Documentation](https://tailwindcss.com/docs/margin)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Margin {
     /// Margin on all sides (m-*)

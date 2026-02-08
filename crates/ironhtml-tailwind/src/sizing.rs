@@ -44,6 +44,8 @@ impl TailwindClass for Width {
 }
 
 /// Height utilities
+///
+/// See [Tailwind CSS Height Documentation](https://tailwindcss.com/docs/height)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Height {
     /// h-{n}

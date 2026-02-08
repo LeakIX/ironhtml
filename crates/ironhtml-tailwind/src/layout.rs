@@ -42,6 +42,8 @@ impl TailwindClass for Display {
 }
 
 /// Position utilities
+///
+/// See [Tailwind CSS Position Documentation](https://tailwindcss.com/docs/position)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Position {
     Static,
@@ -64,6 +66,8 @@ impl TailwindClass for Position {
 }
 
 /// Overflow utilities
+///
+/// See [Tailwind CSS Overflow Documentation](https://tailwindcss.com/docs/overflow)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Overflow {
     Auto,

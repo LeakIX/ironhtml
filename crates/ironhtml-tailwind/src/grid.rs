@@ -23,6 +23,8 @@ impl TailwindClass for GridCols {
 }
 
 /// Grid rows utilities
+///
+/// See [Tailwind CSS Grid Template Rows Documentation](https://tailwindcss.com/docs/grid-template-rows)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GridRows {
     /// grid-rows-{n}
@@ -41,6 +43,8 @@ impl TailwindClass for GridRows {
 }
 
 /// Gap utilities
+///
+/// See [Tailwind CSS Gap Documentation](https://tailwindcss.com/docs/gap)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Gap {
     /// gap-{n}

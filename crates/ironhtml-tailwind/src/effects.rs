@@ -40,6 +40,8 @@ impl TailwindClass for Shadow {
 }
 
 /// Opacity utilities
+///
+/// See [Tailwind CSS Opacity Documentation](https://tailwindcss.com/docs/opacity)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Opacity {
     /// opacity-0

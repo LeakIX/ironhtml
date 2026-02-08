@@ -43,6 +43,8 @@ impl TailwindClass for FontSize {
 }
 
 /// Font weight utilities
+///
+/// See [Tailwind CSS Font Weight Documentation](https://tailwindcss.com/docs/font-weight)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FontWeight {
     Thin,
@@ -73,6 +75,8 @@ impl TailwindClass for FontWeight {
 }
 
 /// Text alignment utilities
+///
+/// See [Tailwind CSS Text Align Documentation](https://tailwindcss.com/docs/text-align)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TextAlign {
     Left,

@@ -24,7 +24,33 @@ ironhtml-tailwind = "1.0"
 
 ## Usage
 
-### Basic Example
+### With html! Macro (Recommended)
+
+The html! macro provides the most ergonomic syntax for building HTML with Tailwind:
+
+```rust
+use ironhtml::html;
+
+let card = html! {
+    div.class("bg-white rounded-lg shadow-md p-6 hover:shadow-lg") {
+        h2.class("text-2xl font-bold text-gray-900 mb-2") {
+            "Welcome"
+        }
+        p.class("text-gray-600 mb-4") {
+            "Type-safe HTML with Tailwind utilities"
+        }
+        button.class("bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600") {
+            "Get Started"
+        }
+    }
+};
+```
+
+See the [macro example](examples/tailwind_macro.rs) for a complete demonstration.
+
+### With Typed API
+
+For type-safe Tailwind utilities:
 
 ```rust
 use ironhtml::typed::Element;
@@ -163,13 +189,17 @@ element.tw_raw("custom-utility-class")
 
 ## Examples
 
-Run the included example:
+Run the included examples:
 
 ```bash
+# Type-safe Tailwind utilities example
 cargo run --example tailwind_demo
+
+# html! macro with Tailwind example
+cargo run --example tailwind_macro
 ```
 
-This generates a complete HTML page demonstrating various Tailwind utilities.
+Both examples generate complete HTML pages demonstrating various Tailwind utilities.
 
 ## License
 
