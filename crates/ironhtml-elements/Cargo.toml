@@ -5,6 +5,7 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
+readme.workspace = true
 description = "Type-safe HTML5 elements following the WHATWG Living Standard"
 keywords = ["html", "html5", "elements", "type-safe", "no-std"]
 categories = ["web-programming", "no-std"]

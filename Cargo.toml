@@ -8,6 +8,7 @@ edition = "2021"
 license = "MIT"
 rust-version = "1.81.0"
 repository = "https://github.com/LeakIX/ironhtml"
+readme = "README.md"
 
 [workspace.dependencies]
 ironhtml-elements = { path = "crates/ironhtml-elements" }
