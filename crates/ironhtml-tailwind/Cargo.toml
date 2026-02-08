@@ -1,0 +1,16 @@
+[package]
+name = "ironhtml-tailwind"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Type-safe Tailwind CSS utilities for ironhtml with compile-time conflict detection"
+keywords = ["html", "tailwind", "css", "type-safe"]
+categories = ["web-programming"]
+
+[lints]
+workspace = true
+
+[dependencies]
+ironhtml.workspace = true
+ironhtml-elements.workspace = true
