@@ -1,8 +1,8 @@
 //! Spacing utilities: padding and margin
 
+use crate::TailwindClass;
 use alloc::format;
 use alloc::string::String;
-use crate::TailwindClass;
 
 /// Padding utilities (p-*, px-*, py-*, pt-*, pb-*, pl-*, pr-*)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

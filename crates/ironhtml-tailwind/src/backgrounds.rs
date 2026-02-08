@@ -1,8 +1,8 @@
 //! Background utilities
 
+use crate::TailwindClass;
 use alloc::format;
 use alloc::string::String;
-use crate::TailwindClass;
 
 /// Background color utilities
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -1,8 +1,8 @@
 //! Sizing utilities: width and height
 
+use crate::TailwindClass;
 use alloc::format;
 use alloc::string::String;
-use crate::TailwindClass;
 
 /// Width utilities
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

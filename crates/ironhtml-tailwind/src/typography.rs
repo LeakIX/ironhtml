@@ -1,8 +1,8 @@
 //! Typography utilities: font size, weight, text align, and color
 
+use crate::TailwindClass;
 use alloc::format;
 use alloc::string::String;
-use crate::TailwindClass;
 
 /// Font size utilities
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

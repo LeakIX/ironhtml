@@ -1,7 +1,7 @@
 //! Flexbox utilities
 
-use alloc::string::String;
 use crate::TailwindClass;
+use alloc::string::String;
 
 /// Flex direction utilities
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -1,8 +1,8 @@
 //! Grid utilities
 
+use crate::TailwindClass;
 use alloc::format;
 use alloc::string::String;
-use crate::TailwindClass;
 
 /// Grid columns utilities
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

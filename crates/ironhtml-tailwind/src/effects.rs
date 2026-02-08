@@ -1,7 +1,7 @@
 //! Effects utilities: shadows and opacity
 
-use alloc::string::String;
 use crate::TailwindClass;
+use alloc::string::String;
 
 /// Shadow utilities
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

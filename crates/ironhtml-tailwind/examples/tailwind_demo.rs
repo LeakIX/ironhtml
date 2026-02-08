@@ -1,10 +1,16 @@
 //! Example demonstrating type-safe Tailwind CSS usage with ironhtml
 //!
-//! Run with: cargo run --example tailwind_demo
+//! Run with: `cargo run --example tailwind_demo`
 
 use ironhtml::typed::{Document, Element};
-use ironhtml_elements::*;
-use ironhtml_tailwind::*;
+use ironhtml_elements::{
+    Body, Button, Div, H1, H2, H3, Head, Html, Meta, P, Script, Title,
+};
+use ironhtml_tailwind::{
+    BackgroundColor, BorderColor, BorderRadius, BorderWidth, Display, FlexDirection,
+    FontSize, FontWeight, Gap, GridCols, Margin, Padding, Shadow, TailwindElement,
+    TextColor, Width,
+};
 
 fn main() {
     let page = Document::new()
@@ -18,9 +24,7 @@ fn main() {
                                 .attr("content", "width=device-width, initial-scale=1.0")
                         })
                         .child::<Title, _>(|t| t.text("Tailwind CSS Demo"))
-                        .child::<Script, _>(|s| {
-                            s.attr("src", "https://cdn.tailwindcss.com")
-                        })
+                        .child::<Script, _>(|s| s.attr("src", "https://cdn.tailwindcss.com"))
                 })
                 .child::<Body, _>(|body| {
                     body.tw(BackgroundColor::Gray(50))
@@ -30,7 +34,7 @@ fn main() {
         })
         .build();
 
-    println!("{}", page);
+    println!("{page}");
 }
 
 /// Main container with card layout
@@ -55,8 +59,12 @@ fn container() -> Element<Div> {
                 .tw(Gap::All(6))
                 .tw_md(GridCols::Cols(1))
                 .child::<Div, _>(|_| feature_card("Fast", "Blazing fast type-safe HTML", "blue"))
-                .child::<Div, _>(|_| feature_card("Safe", "Compile-time Tailwind validation", "green"))
-                .child::<Div, _>(|_| feature_card("Easy", "Ergonomic API with full IDE support", "purple"))
+                .child::<Div, _>(|_| {
+                    feature_card("Safe", "Compile-time Tailwind validation", "green")
+                })
+                .child::<Div, _>(|_| {
+                    feature_card("Easy", "Ergonomic API with full IDE support", "purple")
+                })
         })
         .child::<Div, _>(|_| button_showcase())
 }
@@ -112,10 +120,26 @@ fn hero_card() -> Element<Div> {
 /// Feature card component
 fn feature_card(title: &str, description: &str, color: &str) -> Element<Div> {
     let (bg_color, text_color, border_color) = match color {
-        "blue" => (BackgroundColor::Blue(50), TextColor::Blue(700), BorderColor::Blue(200)),
-        "green" => (BackgroundColor::Green(50), TextColor::Green(700), BorderColor::Green(200)),
-        "purple" => (BackgroundColor::Purple(50), TextColor::Purple(700), BorderColor::Purple(200)),
-        _ => (BackgroundColor::Gray(50), TextColor::Gray(700), BorderColor::Gray(200)),
+        "blue" => (
+            BackgroundColor::Blue(50),
+            TextColor::Blue(700),
+            BorderColor::Blue(200),
+        ),
+        "green" => (
+            BackgroundColor::Green(50),
+            TextColor::Green(700),
+            BorderColor::Green(200),
+        ),
+        "purple" => (
+            BackgroundColor::Purple(50),
+            TextColor::Purple(700),
+            BorderColor::Purple(200),
+        ),
+        _ => (
+            BackgroundColor::Gray(50),
+            TextColor::Gray(700),
+            BorderColor::Gray(200),
+        ),
     };
 
     Element::<Div>::new()
@@ -132,10 +156,7 @@ fn feature_card(title: &str, description: &str, color: &str) -> Element<Div> {
                 .tw(Margin::B(2))
                 .text(title)
         })
-        .child::<P, _>(|p| {
-            p.tw(TextColor::Gray(600))
-                .text(description)
-        })
+        .child::<P, _>(|p| p.tw(TextColor::Gray(600)).text(description))
 }
 
 /// Button showcase
@@ -156,10 +177,34 @@ fn button_showcase() -> Element<Div> {
                 .tw(Gap::All(4))
                 .tw(FlexDirection::Row)
                 .tw_md(FlexDirection::Col)
-                .child::<Button, _>(|_| styled_button("Primary", BackgroundColor::Blue(600), BackgroundColor::Blue(700)))
-                .child::<Button, _>(|_| styled_button("Success", BackgroundColor::Green(600), BackgroundColor::Green(700)))
-                .child::<Button, _>(|_| styled_button("Danger", BackgroundColor::Red(600), BackgroundColor::Red(700)))
-                .child::<Button, _>(|_| styled_button("Warning", BackgroundColor::Yellow(500), BackgroundColor::Yellow(600)))
+                .child::<Button, _>(|_| {
+                    styled_button(
+                        "Primary",
+                        BackgroundColor::Blue(600),
+                        BackgroundColor::Blue(700),
+                    )
+                })
+                .child::<Button, _>(|_| {
+                    styled_button(
+                        "Success",
+                        BackgroundColor::Green(600),
+                        BackgroundColor::Green(700),
+                    )
+                })
+                .child::<Button, _>(|_| {
+                    styled_button(
+                        "Danger",
+                        BackgroundColor::Red(600),
+                        BackgroundColor::Red(700),
+                    )
+                })
+                .child::<Button, _>(|_| {
+                    styled_button(
+                        "Warning",
+                        BackgroundColor::Yellow(500),
+                        BackgroundColor::Yellow(600),
+                    )
+                })
         })
 }
 
