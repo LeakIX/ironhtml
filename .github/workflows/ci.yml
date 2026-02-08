@@ -30,6 +30,9 @@ jobs:
       - name: Run tests
         run: make test
 
+      - name: Run doc tests
+        run: make test-doc
+
   wasm:
     runs-on: ubuntu-latest
     steps:
