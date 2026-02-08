@@ -60,6 +60,7 @@ enum State {
     DoctypeName,
     AfterDoctypeName,
     BogusComment,
+    RawText,
 }
 
 /// HTML5 tokenizer.
@@ -76,6 +77,8 @@ pub struct Tokenizer<'a> {
     current_comment: String,
     current_doctype_name: Option<String>,
     pending_tokens: Vec<Token>,
+    /// Tag name for raw text mode (script, style, textarea, title, etc.)
+    raw_text_tag: String,
 }
 
 impl<'a> Tokenizer<'a> {
@@ -95,6 +98,7 @@ impl<'a> Tokenizer<'a> {
             current_comment: String::new(),
             current_doctype_name: None,
             pending_tokens: Vec::new(),
+            raw_text_tag: String::new(),
         }
     }
 
@@ -117,12 +121,23 @@ impl<'a> Tokenizer<'a> {
         if is_end {
             Token::EndTag { name }
         } else {
+            // Switch to raw text mode for elements whose content is not HTML
+            if !self_closing && Self::is_raw_text_element(&name) {
+                self.raw_text_tag.clone_from(&name);
+                self.state = State::RawText;
+            }
+
             Token::StartTag {
                 name,
                 attributes: attrs,
                 self_closing,
             }
         }
+    }
+
+    /// Check if an element uses raw text content (no child HTML parsing).
+    fn is_raw_text_element(tag: &str) -> bool {
+        matches!(tag, "script" | "style" | "textarea" | "title")
     }
 
     fn emit_current_attr(&mut self) {
@@ -551,6 +566,51 @@ impl<'a> Tokenizer<'a> {
                     }
                 }
 
+                State::RawText => {
+                    // Look for `</tagname>` (case-insensitive) to end raw text
+                    let remaining =
+                        &self.input[self.chars.peek().map_or(self.input.len(), |(i, _)| *i)..];
+                    let close_tag = {
+                        let mut s = String::from("</");
+                        s.push_str(&self.raw_text_tag);
+                        s
+                    };
+                    if let Some(pos) = remaining.to_ascii_lowercase().find(&close_tag) {
+                        // Check that the char after the tag name is '>' or whitespace or '/'
+                        let after = pos + close_tag.len();
+                        let valid_end = after >= remaining.len()
+                            || matches!(
+                                remaining.as_bytes().get(after),
+                                Some(b'>' | b' ' | b'\t' | b'\n' | b'/' | 0x0C)
+                            );
+
+                        if valid_end {
+                            // Emit all characters before the close tag
+                            for _ in 0..pos {
+                                if let Some(c) = self.consume() {
+                                    self.pending_tokens.push(Token::Character(c));
+                                }
+                            }
+                            // Now let the normal tokenizer handle `</tagname>`
+                            self.raw_text_tag.clear();
+                            self.state = State::Data;
+
+                            if !self.pending_tokens.is_empty() {
+                                return Some(self.pending_tokens.remove(0));
+                            }
+                            continue;
+                        }
+                    }
+
+                    // No close tag found — emit rest as characters
+                    if let Some(c) = self.consume() {
+                        return Some(Token::Character(c));
+                    }
+                    self.raw_text_tag.clear();
+                    self.state = State::Data;
+                    return Some(Token::Eof);
+                }
+
                 State::BogusComment => match self.consume() {
                     Some('>') => {
                         self.state = State::Data;
@@ -693,5 +753,98 @@ mod tests {
                 self_closing: false,
             })
         );
+    }
+
+    // ── Raw text element tests ──────────────────────────────────────
+
+    #[test]
+    fn test_script_raw_text() {
+        let tokens: Vec<_> = Tokenizer::new("<script>var x = '<div>';</script>").collect();
+        assert_eq!(
+            tokens[0],
+            Token::StartTag {
+                name: "script".into(),
+                attributes: vec![],
+                self_closing: false,
+            }
+        );
+        // Content should be raw characters, not parsed as tags
+        let text: String = tokens[1..tokens.len() - 1]
+            .iter()
+            .filter_map(|t| match t {
+                Token::Character(c) => Some(*c),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(text, "var x = '<div>';");
+        assert_eq!(
+            *tokens.last().unwrap(),
+            Token::EndTag {
+                name: "script".into()
+            }
+        );
+    }
+
+    #[test]
+    fn test_style_raw_text() {
+        let tokens: Vec<_> = Tokenizer::new("<style>p > .cls { color: red; }</style>").collect();
+        assert_eq!(
+            tokens[0],
+            Token::StartTag {
+                name: "style".into(),
+                attributes: vec![],
+                self_closing: false,
+            }
+        );
+        let text: String = tokens[1..tokens.len() - 1]
+            .iter()
+            .filter_map(|t| match t {
+                Token::Character(c) => Some(*c),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(text, "p > .cls { color: red; }");
+    }
+
+    #[test]
+    fn test_script_with_inner_script_reference() {
+        // <script> containing "</script" as part of a string should only
+        // close on a real "</script>" end tag
+        let tokens: Vec<_> =
+            Tokenizer::new(r#"<script>var s = "<b>not a tag</b>";</script>"#).collect();
+        let text: String = tokens[1..tokens.len() - 1]
+            .iter()
+            .filter_map(|t| match t {
+                Token::Character(c) => Some(*c),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(text, r#"var s = "<b>not a tag</b>";"#);
+    }
+
+    #[test]
+    fn test_textarea_raw_text() {
+        let tokens: Vec<_> = Tokenizer::new("<textarea><b>bold</b> & stuff</textarea>").collect();
+        let text: String = tokens[1..tokens.len() - 1]
+            .iter()
+            .filter_map(|t| match t {
+                Token::Character(c) => Some(*c),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(text, "<b>bold</b> & stuff");
+    }
+
+    #[test]
+    fn test_title_raw_text() {
+        let tokens: Vec<_> = Tokenizer::new("<title>A <em>page</em></title>").collect();
+        let text: String = tokens[1..tokens.len() - 1]
+            .iter()
+            .filter_map(|t| match t {
+                Token::Character(c) => Some(*c),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(text, "A <em>page</em>");
     }
 }
