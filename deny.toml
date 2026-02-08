@@ -2,8 +2,6 @@
 all-features = true
 
 [advisories]
-vulnerability = "deny"
-unmaintained = "warn"
 
 [licenses]
 allow = [
