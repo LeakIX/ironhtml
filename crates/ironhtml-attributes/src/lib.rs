@@ -113,7 +113,7 @@ impl AttributeValue for bool {
 ///
 /// # Example
 /// ```rust
-/// use ironhtml_attributes::Dir;
+/// use ironhtml_attributes::{AttributeValue, Dir};
 /// let direction = Dir::Rtl;
 /// assert_eq!(direction.to_attr_value(), "rtl");
 /// ```
@@ -166,7 +166,7 @@ impl AttributeValue for Dir {
 ///
 /// # Example
 /// ```rust
-/// use ironhtml_attributes::ContentEditable;
+/// use ironhtml_attributes::{AttributeValue, ContentEditable};
 /// let editable = ContentEditable::True;
 /// assert_eq!(editable.to_attr_value(), "true");
 /// ```
@@ -218,7 +218,7 @@ impl AttributeValue for ContentEditable {
 ///
 /// # Example
 /// ```rust
-/// use ironhtml_attributes::Draggable;
+/// use ironhtml_attributes::{AttributeValue, Draggable};
 /// let draggable = Draggable::True;
 /// assert_eq!(draggable.to_attr_value(), "true");
 /// ```
@@ -264,7 +264,7 @@ impl AttributeValue for Draggable {
 ///
 /// # Example
 /// ```rust
-/// use ironhtml_attributes::Hidden;
+/// use ironhtml_attributes::{AttributeValue, Hidden};
 /// let hidden = Hidden::UntilFound;
 /// assert_eq!(hidden.to_attr_value(), "until-found");
 /// ```
@@ -312,7 +312,7 @@ impl AttributeValue for Hidden {
 ///
 /// # Example
 /// ```rust
-/// use ironhtml_attributes::Spellcheck;
+/// use ironhtml_attributes::{AttributeValue, Spellcheck};
 /// let check = Spellcheck::False;
 /// assert_eq!(check.to_attr_value(), "false");
 /// ```
@@ -360,7 +360,7 @@ impl AttributeValue for Spellcheck {
 ///
 /// # Example
 /// ```rust
-/// use ironhtml_attributes::Translate;
+/// use ironhtml_attributes::{AttributeValue, Translate};
 /// let trans = Translate::No;
 /// assert_eq!(trans.to_attr_value(), "no");
 /// ```
@@ -414,7 +414,7 @@ impl AttributeValue for Translate {
 ///
 /// # Example
 /// ```rust
-/// use ironhtml_attributes::Target;
+/// use ironhtml_attributes::{AttributeValue, Target};
 /// let target = Target::Blank;
 /// assert_eq!(target.to_attr_value(), "_blank");
 /// ```
@@ -483,7 +483,7 @@ impl AttributeValue for Target {
 ///
 /// # Example
 /// ```rust
-/// use ironhtml_attributes::Rel;
+/// use ironhtml_attributes::{AttributeValue, Rel};
 /// let rel = Rel::Noopener;
 /// assert_eq!(rel.to_attr_value(), "noopener");
 /// ```
@@ -567,7 +567,7 @@ impl AttributeValue for Rel {
 ///
 /// # Example
 /// ```rust
-/// use ironhtml_attributes::Loading;
+/// use ironhtml_attributes::{AttributeValue, Loading};
 /// let loading = Loading::Lazy;
 /// assert_eq!(loading.to_attr_value(), "lazy");
 /// ```
@@ -617,7 +617,7 @@ impl AttributeValue for Loading {
 ///
 /// # Example
 /// ```rust
-/// use ironhtml_attributes::Decoding;
+/// use ironhtml_attributes::{AttributeValue, Decoding};
 /// let decoding = Decoding::Async;
 /// assert_eq!(decoding.to_attr_value(), "async");
 /// ```
@@ -670,7 +670,7 @@ impl AttributeValue for Decoding {
 ///
 /// # Example
 /// ```rust
-/// use ironhtml_attributes::CrossOrigin;
+/// use ironhtml_attributes::{AttributeValue, CrossOrigin};
 /// let cors = CrossOrigin::Anonymous;
 /// assert_eq!(cors.to_attr_value(), "anonymous");
 /// ```
@@ -725,7 +725,7 @@ impl AttributeValue for CrossOrigin {
 ///
 /// # Example
 /// ```rust
-/// use ironhtml_attributes::ReferrerPolicy;
+/// use ironhtml_attributes::{AttributeValue, ReferrerPolicy};
 /// let policy = ReferrerPolicy::NoReferrer;
 /// assert_eq!(policy.to_attr_value(), "no-referrer");
 /// ```
@@ -815,7 +815,7 @@ impl AttributeValue for ReferrerPolicy {
 ///
 /// # Example
 /// ```rust
-/// use ironhtml_attributes::InputType;
+/// use ironhtml_attributes::{AttributeValue, InputType};
 /// let input_type = InputType::Email;
 /// assert_eq!(input_type.to_attr_value(), "email");
 /// ```
@@ -928,7 +928,7 @@ impl AttributeValue for InputType {
 ///
 /// # Example
 /// ```rust
-/// use ironhtml_attributes::ButtonType;
+/// use ironhtml_attributes::{AttributeValue, ButtonType};
 /// let btn_type = ButtonType::Submit;
 /// assert_eq!(btn_type.to_attr_value(), "submit");
 /// ```
@@ -996,7 +996,7 @@ impl AttributeValue for ButtonType {
 ///
 /// # Example
 /// ```rust
-/// use ironhtml_attributes::Autocomplete;
+/// use ironhtml_attributes::{AttributeValue, Autocomplete};
 /// let autocomplete = Autocomplete::Email;
 /// assert_eq!(autocomplete.to_attr_value(), "email");
 /// ```
@@ -1093,7 +1093,7 @@ impl AttributeValue for Autocomplete {
 ///
 /// # Example
 /// ```rust
-/// use ironhtml_attributes::Method;
+/// use ironhtml_attributes::{AttributeValue, Method};
 /// let method = Method::Post;
 /// assert_eq!(method.to_attr_value(), "post");
 /// ```
@@ -1148,7 +1148,7 @@ impl AttributeValue for Method {
 ///
 /// # Example
 /// ```rust
-/// use ironhtml_attributes::Enctype;
+/// use ironhtml_attributes::{AttributeValue, Enctype};
 /// let enctype = Enctype::Multipart;
 /// assert_eq!(enctype.to_attr_value(), "multipart/form-data");
 /// ```
@@ -1205,7 +1205,7 @@ impl AttributeValue for Enctype {
 ///
 /// # Example
 /// ```rust
-/// use ironhtml_attributes::Wrap;
+/// use ironhtml_attributes::{AttributeValue, Wrap};
 /// let wrap = Wrap::Hard;
 /// assert_eq!(wrap.to_attr_value(), "hard");
 /// ```
@@ -1260,7 +1260,7 @@ impl AttributeValue for Wrap {
 ///
 /// # Example
 /// ```rust
-/// use ironhtml_attributes::Scope;
+/// use ironhtml_attributes::{AttributeValue, Scope};
 /// let scope = Scope::Col;
 /// assert_eq!(scope.to_attr_value(), "col");
 /// ```
@@ -1327,7 +1327,7 @@ impl AttributeValue for Scope {
 ///
 /// # Example
 /// ```rust
-/// use ironhtml_attributes::Preload;
+/// use ironhtml_attributes::{AttributeValue, Preload};
 /// let preload = Preload::Metadata;
 /// assert_eq!(preload.to_attr_value(), "metadata");
 /// ```
@@ -1384,7 +1384,7 @@ impl AttributeValue for Preload {
 ///
 /// # Example
 /// ```rust
-/// use ironhtml_attributes::TrackKind;
+/// use ironhtml_attributes::{AttributeValue, TrackKind};
 /// let kind = TrackKind::Subtitles;
 /// assert_eq!(kind.to_attr_value(), "subtitles");
 /// ```
@@ -1458,7 +1458,7 @@ impl AttributeValue for TrackKind {
 ///
 /// # Example
 /// ```rust
-/// use ironhtml_attributes::Sandbox;
+/// use ironhtml_attributes::{AttributeValue, Sandbox};
 /// let sandbox = Sandbox::AllowScripts;
 /// assert_eq!(sandbox.to_attr_value(), "allow-scripts");
 /// ```
