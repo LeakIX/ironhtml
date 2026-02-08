@@ -75,7 +75,7 @@
 //! ```rust
 //! use ironhtml_bootstrap::*;
 //! use ironhtml::typed::Element;
-//! use ironhtml_elements::{Div, A};
+//! use ironhtml_elements::{Button, Div, A};
 //!
 //! // ============================================================
 //! // REUSABLE COMPONENT: Product Card
@@ -119,10 +119,10 @@
 //!             .child::<H4, _>(|h| h.text(tier.price))
 //!             .child::<Ul, _>(|ul| {
 //!                 tier.features.iter().fold(ul.class("list-unstyled"), |ul, feature| {
-//!                     ul.child::<Li, _>(|li| li.text(feature))
+//!                     ul.child::<Li, _>(|li| li.text(*feature))
 //!                 })
 //!             })
-//!             .child::<Div, _>(|_| {
+//!             .child::<Button, _>(|_| {
 //!                 buttons::btn(Color::Primary, "Choose Plan")
 //!             })
 //!     })
