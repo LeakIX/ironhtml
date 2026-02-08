@@ -313,7 +313,7 @@ struct ForLoop {
 
 impl Parse for ForLoop {
     fn parse(input: ParseStream) -> Result<Self> {
-        input.parse::<Token![for]>()?;
+        let for_token: Token![for] = input.parse()?;
         let pat = syn::Pat::parse_single(input)?;
         input.parse::<Token![in]>()?;
         input.parse::<Token![#]>()?;
@@ -327,6 +327,13 @@ impl Parse for ForLoop {
         let mut children = Vec::new();
         while !content.is_empty() {
             children.push(content.parse()?);
+        }
+
+        if children.len() != 1 || !matches!(children.first(), Some(Node::Element(_))) {
+            return Err(syn::Error::new(
+                for_token.span,
+                "for loop body must contain exactly one element",
+            ));
         }
 
         Ok(Self {
@@ -464,8 +471,6 @@ fn to_pascal_case(s: &str) -> String {
         "Em" => "Em".to_string(),
         "Rp" => "Rp".to_string(),
         "Rt" => "Rt".to_string(),
-        "Rb" => "Rb".to_string(),
-        "Rtc" => "Rtc".to_string(),
         "Wbr" => "Wbr".to_string(),
         "Kbd" => "Kbd".to_string(),
         "Pre" => "Pre".to_string(),
