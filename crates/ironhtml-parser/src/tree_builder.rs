@@ -902,4 +902,40 @@ mod tests {
         let p = body.find_element("p").unwrap();
         assert_eq!(p.text_content(), Some("Hello".into()));
     }
+
+    // ── raw text element tests ──────────────────────────────────────
+
+    #[test]
+    fn test_script_content_not_parsed_as_html() {
+        let nodes = parse_fragment("<div><script>var x = '<b>hi</b>';</script><p>After</p></div>");
+        assert_eq!(nodes.len(), 1);
+        let div = nodes[0].as_element().unwrap();
+        let script = div.find_element("script").unwrap();
+        assert_eq!(script.text_content(), Some("var x = '<b>hi</b>';".into()));
+        // <p> should be a sibling of <script>, not nested inside it
+        let p = div.find_element("p").unwrap();
+        assert_eq!(p.text_content(), Some("After".into()));
+    }
+
+    #[test]
+    fn test_style_content_not_parsed_as_html() {
+        let nodes = parse_fragment("<style>p > .cls { color: red; }</style>");
+        assert_eq!(nodes.len(), 1);
+        let style = nodes[0].as_element().unwrap();
+        assert_eq!(style.tag_name, "style");
+        assert_eq!(
+            style.text_content(),
+            Some("p > .cls { color: red; }".into())
+        );
+    }
+
+    #[test]
+    fn test_script_in_head() {
+        let doc = parse(
+            "<!DOCTYPE html><html><head><script>alert('<xss>')</script></head><body></body></html>",
+        );
+        let head = doc.head().unwrap();
+        let script = head.find_element("script").unwrap();
+        assert_eq!(script.text_content(), Some("alert('<xss>')".into()));
+    }
 }

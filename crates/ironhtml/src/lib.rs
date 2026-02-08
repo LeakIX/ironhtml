@@ -261,9 +261,20 @@ pub struct Html {
 
 impl Element {
     /// Create a new element with the given tag name.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `tag` is empty, starts with a non-letter, or contains
+    /// characters other than ASCII alphanumerics and hyphens.
     #[must_use]
     pub fn new(tag: impl Into<String>) -> Self {
         let tag = tag.into();
+        validate_tag_name(&tag);
+        Self::new_unchecked(tag)
+    }
+
+    /// Internal constructor that skips tag name validation.
+    fn new_unchecked(tag: String) -> Self {
         let self_closing = matches!(
             tag.as_str(),
             "area"
@@ -289,16 +300,28 @@ impl Element {
     }
 
     /// Add an attribute to this element.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `name` is empty or contains invalid attribute name characters.
     #[must_use]
     pub fn attr(mut self, name: impl Into<String>, value: impl Into<String>) -> Self {
-        self.attrs.push((name.into(), value.into()));
+        let name = name.into();
+        validate_attr_name(&name);
+        self.attrs.push((name, value.into()));
         self
     }
 
     /// Add a boolean attribute (no value, e.g., `disabled`, `checked`).
+    ///
+    /// # Panics
+    ///
+    /// Panics if `name` is empty or contains invalid attribute name characters.
     #[must_use]
     pub fn bool_attr(mut self, name: impl Into<String>) -> Self {
-        self.attrs.push((name.into(), String::new()));
+        let name = name.into();
+        validate_attr_name(&name);
+        self.attrs.push((name, String::new()));
         self
     }
 
@@ -361,7 +384,7 @@ impl Element {
         F: Fn(I::Item, Self) -> Self,
     {
         for item in items {
-            let child = f(item, Self::new(""));
+            let child = f(item, Self::new_unchecked(String::new()));
             if !child.tag.is_empty() {
                 self.children.push(Node::Element(child));
             }
@@ -481,6 +504,52 @@ impl Html {
         }
         output
     }
+}
+
+/// Validate that a tag name contains only valid characters.
+///
+/// # Panics
+///
+/// Panics if the tag name is empty or contains invalid characters.
+fn validate_tag_name(name: &str) {
+    assert!(!name.is_empty(), "tag name must not be empty");
+    assert!(
+        name.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-'),
+        "tag name contains invalid characters: {name:?}"
+    );
+    assert!(
+        name.as_bytes()[0].is_ascii_alphabetic(),
+        "tag name must start with a letter: {name:?}"
+    );
+}
+
+/// Validate that an attribute name contains only valid characters.
+///
+/// Rejects names with whitespace, quotes, `<`, `>`, `/`, `=`, or null
+/// bytes — characters that could break out of the attribute context.
+///
+/// # Panics
+///
+/// Panics if the attribute name is empty or contains invalid characters.
+fn validate_attr_name(name: &str) {
+    assert!(!name.is_empty(), "attribute name must not be empty");
+    assert!(
+        !name.bytes().any(|b| matches!(
+            b,
+            b' ' | b'\t'
+                | b'\n'
+                | b'\r'
+                | b'\x0C'
+                | b'"'
+                | b'\''
+                | b'>'
+                | b'<'
+                | b'/'
+                | b'='
+                | b'\0'
+        )),
+        "attribute name contains invalid characters: {name:?}"
+    );
 }
 
 /// Escape special HTML characters in text content.
@@ -743,5 +812,82 @@ mod tests {
             html,
             r#"<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" /><title>Hello</title></head><body><h1>Hello, World!</h1></body></html>"#
         );
+    }
+
+    // ── tag name validation tests ───────────────────────────────────
+
+    #[test]
+    fn test_valid_tag_names() {
+        // Standard elements
+        let _ = Element::new("div");
+        let _ = Element::new("h1");
+        let _ = Element::new("br");
+        // Custom elements with hyphens
+        let _ = Element::new("my-component");
+        let _ = Element::new("x-widget");
+    }
+
+    #[test]
+    #[should_panic(expected = "tag name must not be empty")]
+    fn test_empty_tag_name_panics() {
+        let _ = Element::new("");
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid characters")]
+    fn test_tag_name_with_space_panics() {
+        let _ = Element::new("div onclick");
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid characters")]
+    fn test_tag_name_with_angle_bracket_panics() {
+        let _ = Element::new("div><script");
+    }
+
+    #[test]
+    #[should_panic(expected = "must start with a letter")]
+    fn test_tag_name_starting_with_digit_panics() {
+        let _ = Element::new("1div");
+    }
+
+    // ── attribute name validation tests ─────────────────────────────
+
+    #[test]
+    fn test_valid_attr_names() {
+        let _ = Element::new("div").attr("class", "x");
+        let _ = Element::new("div").attr("data-id", "1");
+        let _ = Element::new("div").attr("aria-label", "test");
+        let _ = Element::new("div").bool_attr("disabled");
+    }
+
+    #[test]
+    #[should_panic(expected = "attribute name must not be empty")]
+    fn test_empty_attr_name_panics() {
+        let _ = Element::new("div").attr("", "value");
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid characters")]
+    fn test_attr_name_with_space_panics() {
+        let _ = Element::new("div").attr("on click", "alert(1)");
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid characters")]
+    fn test_attr_name_with_quote_panics() {
+        let _ = Element::new("div").attr(r#"x"onmouseover="#, "alert(1)");
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid characters")]
+    fn test_attr_name_with_angle_bracket_panics() {
+        let _ = Element::new("div").attr("x><script", "y");
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid characters")]
+    fn test_attr_name_with_equals_panics() {
+        let _ = Element::new("div").attr("x=y", "z");
     }
 }

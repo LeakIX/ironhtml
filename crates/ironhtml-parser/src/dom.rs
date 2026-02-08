@@ -381,8 +381,9 @@ impl Element {
                 // Escape attribute value
                 for c in attr.value.chars() {
                     match c {
-                        '"' => output.push_str("&quot;"),
                         '&' => output.push_str("&amp;"),
+                        '"' => output.push_str("&quot;"),
+                        '\'' => output.push_str("&#x27;"),
                         '<' => output.push_str("&lt;"),
                         '>' => output.push_str("&gt;"),
                         _ => output.push(c),
@@ -520,5 +521,24 @@ mod tests {
 
         let html = doc.to_html();
         assert!(html.starts_with("<!DOCTYPE html>"));
+    }
+
+    #[test]
+    fn test_escape_single_quotes_in_attributes() {
+        let mut elem = Element::new("div");
+        elem.set_attribute("data-msg", "it's a test");
+
+        assert_eq!(elem.to_html(), r#"<div data-msg="it&#x27;s a test"></div>"#);
+    }
+
+    #[test]
+    fn test_escape_all_special_chars_in_attributes() {
+        let mut elem = Element::new("div");
+        elem.set_attribute("data-val", r#"a&b<c>d"e'f"#);
+
+        assert_eq!(
+            elem.to_html(),
+            r#"<div data-val="a&amp;b&lt;c&gt;d&quot;e&#x27;f"></div>"#
+        );
     }
 }
