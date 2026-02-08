@@ -6,14 +6,15 @@
 //! ## Example
 //!
 //! ```rust
-//! use ironhtml_bootstrap::navbar::*;
+//! use ironhtml_bootstrap::navbar::{navbar, nav_item};
 //! use ironhtml_bootstrap::NavbarExpand;
+//! use ironhtml_elements::Li;
 //!
 //! // Create a navbar with brand and nav items
 //! let nav = navbar("MyApp", NavbarExpand::Lg, "main-nav", |nav| {
-//!     nav.child(nav_item("/", "Home", true))
-//!        .child(nav_item("/about", "About", false))
-//!        .child(nav_item("/contact", "Contact", false))
+//!     nav.child::<Li, _>(|_| nav_item("/", "Home", true))
+//!        .child::<Li, _>(|_| nav_item("/about", "About", false))
+//!        .child::<Li, _>(|_| nav_item("/contact", "Contact", false))
 //! });
 //!
 //! let html = nav.render();
