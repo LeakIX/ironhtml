@@ -471,8 +471,6 @@ fn to_pascal_case(s: &str) -> String {
         "Em" => "Em".to_string(),
         "Rp" => "Rp".to_string(),
         "Rt" => "Rt".to_string(),
-        "Rb" => "Rb".to_string(),
-        "Rtc" => "Rtc".to_string(),
         "Wbr" => "Wbr".to_string(),
         "Kbd" => "Kbd".to_string(),
         "Pre" => "Pre".to_string(),
