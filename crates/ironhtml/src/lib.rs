@@ -71,6 +71,118 @@ extern crate alloc;
 #[cfg(feature = "typed")]
 pub mod typed;
 
+/// Re-export of the [`html!`](ironhtml_macro::html) proc macro for
+/// type-safe HTML construction with Rust-like syntax.
+///
+/// # Syntax
+///
+/// ```rust
+/// use ironhtml::html;
+///
+/// let nav = html! {
+///     ul.class("nav") {
+///         li { a.href("/") { "Home" } }
+///         li { a.href("/about") { "About" } }
+///     }
+/// };
+///
+/// assert!(nav.render().contains(r#"<ul class="nav">"#));
+/// ```
+///
+/// ## Elements
+///
+/// Elements are written as identifiers followed by optional attributes
+/// and children:
+///
+/// ```rust
+/// use ironhtml::html;
+///
+/// let _ = html! { div };                    // Empty div
+/// let _ = html! { div { } };                // Empty div with explicit braces
+/// let _ = html! { div { "text" } };         // Div with text
+/// let _ = html! { div { span { } } };       // Nested elements
+/// ```
+///
+/// ## Attributes
+///
+/// Attributes use method-call syntax with `.`:
+///
+/// ```rust
+/// use ironhtml::html;
+///
+/// let _ = html! { div.class("container") };
+/// let _ = html! { div.id("main").class("wrapper") };
+/// let _ = html! { input.type_("text").name("email") };
+/// let _ = html! { a.href("/").target("_blank") };
+/// ```
+///
+/// ## Text Content
+///
+/// String literals inside braces become text content:
+///
+/// ```rust
+/// use ironhtml::html;
+///
+/// let p = html! { p { "Hello, World!" } };
+/// assert_eq!(p.render(), "<p>Hello, World!</p>");
+///
+/// let span = html! { span { "Multiple " "strings " "concatenated" } };
+/// assert_eq!(span.render(), "<span>Multiple strings concatenated</span>");
+/// ```
+///
+/// ## Rust Expressions
+///
+/// Use `#` prefix to embed Rust expressions:
+///
+/// ```rust
+/// use ironhtml::html;
+///
+/// let name = "World";
+/// let p = html! { p { "Hello, " #name "!" } };
+/// assert_eq!(p.render(), "<p>Hello, World!</p>");
+///
+/// let classes = "btn btn-primary";
+/// let btn = html! { button.class(#classes) { "Click" } };
+/// assert!(btn.render().contains("btn btn-primary"));
+/// ```
+///
+/// ## Loops
+///
+/// Use `for` to iterate:
+///
+/// ```rust
+/// use ironhtml::html;
+/// use ironhtml::typed::Element;
+/// use ironhtml_elements::Li;
+///
+/// let items = vec!["Apple", "Banana", "Cherry"];
+/// let ul = html! {
+///     ul {
+///         for item in #items {
+///             li { #item }
+///         }
+///     }
+/// };
+/// assert!(ul.render().contains("<li>Apple</li>"));
+/// ```
+///
+/// ## Conditionals
+///
+/// Use `if` for conditional rendering:
+///
+/// ```rust
+/// use ironhtml::html;
+///
+/// let show = true;
+/// let div = html! {
+///     div {
+///         if #show {
+///             span { "Visible" }
+///         }
+///     }
+/// };
+/// assert!(div.render().contains("Visible"));
+/// ```
 #[cfg(feature = "macros")]
 pub use ironhtml_macro::html;
 
@@ -247,32 +359,18 @@ impl Element {
 
     /// Render this element to an existing string buffer.
     pub fn render_to(&self, output: &mut String) {
-        output.push('<');
-        output.push_str(&self.tag);
-
-        for (name, value) in &self.attrs {
-            output.push(' ');
-            output.push_str(name);
-            if !value.is_empty() {
-                output.push_str("=\"");
-                output.push_str(&escape_attr(value));
-                output.push('"');
-            }
-        }
-
-        if self.self_closing && self.children.is_empty() {
-            output.push_str(" />");
-        } else {
-            output.push('>');
-
-            for child in &self.children {
-                child.render_to(output);
-            }
-
-            output.push_str("</");
-            output.push_str(&self.tag);
-            output.push('>');
-        }
+        render_element_to(
+            output,
+            &self.tag,
+            self.self_closing,
+            &self.attrs,
+            |out| {
+                for child in &self.children {
+                    child.render_to(out);
+                }
+            },
+            !self.children.is_empty(),
+        );
     }
 }
 
@@ -368,6 +466,41 @@ pub fn escape_attr(s: &str) -> String {
         }
     }
     output
+}
+
+/// Render an element's open tag, attributes, children, and close tag.
+///
+/// Shared rendering logic used by both the untyped and typed APIs.
+pub(crate) fn render_element_to<N: AsRef<str>>(
+    output: &mut String,
+    tag: &str,
+    is_void: bool,
+    attrs: &[(N, String)],
+    children: impl FnOnce(&mut String),
+    has_children: bool,
+) {
+    output.push('<');
+    output.push_str(tag);
+
+    for (name, value) in attrs {
+        output.push(' ');
+        output.push_str(name.as_ref());
+        if !value.is_empty() {
+            output.push_str("=\"");
+            output.push_str(&escape_attr(value));
+            output.push('"');
+        }
+    }
+
+    if is_void && !has_children {
+        output.push_str(" />");
+    } else {
+        output.push('>');
+        children(output);
+        output.push_str("</");
+        output.push_str(tag);
+        output.push('>');
+    }
 }
 
 // Convenience functions for common elements
