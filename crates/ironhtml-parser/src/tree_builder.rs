@@ -18,12 +18,12 @@ use crate::tokenizer::Token;
 pub struct TreeBuilder {
     /// The document being built.
     document: Document,
-    /// Stack of open elements.
+    /// Stack of open element indices (used by `navigate_to_element`).
     open_elements: Vec<usize>,
+    /// Parallel stack of open element tag names (for `pop_until`).
+    open_element_names: Vec<String>,
     /// Whether we're in fragment mode.
     fragment_mode: bool,
-    /// Fragment nodes (when in fragment mode).
-    fragment_nodes: Vec<Node>,
     /// Current insertion mode.
     insertion_mode: InsertionMode,
     /// Pending text to be inserted.
@@ -43,6 +43,27 @@ enum InsertionMode {
     AfterAfterBody,
 }
 
+/// Navigate from the document root to the element described by `path`.
+///
+/// `path[0]` is the root sentinel (skipped); subsequent entries are
+/// child indices at each nesting level.
+fn navigate_to_element<'a>(root: &'a mut Element, path: &[usize]) -> &'a mut Element {
+    let mut current = root;
+
+    for &idx in path.iter().skip(1) {
+        if idx < current.children.len() && matches!(current.children[idx], Node::Element(_)) {
+            current = match &mut current.children[idx] {
+                Node::Element(elem) => elem,
+                _ => unreachable!(),
+            };
+        } else {
+            break;
+        }
+    }
+
+    current
+}
+
 impl TreeBuilder {
     /// Create a new tree builder.
     #[must_use]
@@ -50,18 +71,25 @@ impl TreeBuilder {
         Self {
             document: Document::new(),
             open_elements: Vec::new(),
+            open_element_names: Vec::new(),
             fragment_mode: false,
-            fragment_nodes: Vec::new(),
             insertion_mode: InsertionMode::Initial,
             pending_text: String::new(),
         }
     }
 
     /// Set fragment mode (for parsing HTML fragments).
+    ///
+    /// In fragment mode the tree builder skips implicit `<html>`,
+    /// `<head>`, and `<body>` creation and inserts directly into
+    /// `document.root` which acts as a virtual container.
     pub fn set_fragment_mode(&mut self, fragment: bool) {
         self.fragment_mode = fragment;
         if fragment {
             self.insertion_mode = InsertionMode::InBody;
+            // Push a sentinel so navigate_to_element starts from root.
+            self.open_elements.push(0);
+            self.open_element_names.push(String::new());
         }
     }
 
@@ -231,38 +259,27 @@ impl TreeBuilder {
             }
 
             InsertionMode::InBody => {
-                if self.fragment_mode && self.open_elements.is_empty() {
-                    // In fragment mode, just add to fragment nodes
-                    let mut element = Element::new(&name_lower);
-                    for (key, value) in attributes {
-                        element.attributes.push(Attribute::new(key, value));
-                    }
-                    self.fragment_nodes.push(Node::Element(element));
-                    self.open_elements.push(self.fragment_nodes.len() - 1);
-                } else {
-                    // Check for void elements
-                    let is_void = matches!(
-                        name_lower.as_str(),
-                        "area"
-                            | "base"
-                            | "br"
-                            | "col"
-                            | "embed"
-                            | "hr"
-                            | "img"
-                            | "input"
-                            | "link"
-                            | "meta"
-                            | "source"
-                            | "track"
-                            | "wbr"
-                    );
+                let is_void = matches!(
+                    name_lower.as_str(),
+                    "area"
+                        | "base"
+                        | "br"
+                        | "col"
+                        | "embed"
+                        | "hr"
+                        | "img"
+                        | "input"
+                        | "link"
+                        | "meta"
+                        | "source"
+                        | "track"
+                        | "wbr"
+                );
 
-                    self.insert_element(&name_lower, attributes);
+                self.insert_element(&name_lower, attributes);
 
-                    if is_void {
-                        self.pop_element();
-                    }
+                if is_void {
+                    self.pop_element();
                 }
             }
 
@@ -317,18 +334,7 @@ impl TreeBuilder {
 
     fn process_comment(&mut self, data: String) {
         let comment = Node::Comment(Comment::new(data));
-
-        if self.fragment_mode && self.open_elements.is_empty() {
-            self.fragment_nodes.push(comment);
-        } else if let Some(&idx) = self.open_elements.last() {
-            if self.fragment_mode {
-                if let Some(Node::Element(elem)) = self.fragment_nodes.get_mut(idx) {
-                    elem.children.push(comment);
-                }
-            } else {
-                self.insert_into_current(comment);
-            }
-        }
+        self.insert_into_current(comment);
     }
 
     fn create_html_element(&mut self, attributes: Vec<(String, String)>) {
@@ -340,6 +346,7 @@ impl TreeBuilder {
                 .push(Attribute::new(key, value));
         }
         self.open_elements.push(0); // html is always index 0
+        self.open_element_names.push(String::from("html"));
     }
 
     fn insert_element(&mut self, tag_name: &str, attributes: Vec<(String, String)>) {
@@ -348,84 +355,40 @@ impl TreeBuilder {
             element.attributes.push(Attribute::new(key, value));
         }
 
-        if self.fragment_mode {
-            if self.open_elements.is_empty() {
-                let idx = self.fragment_nodes.len();
-                self.fragment_nodes.push(Node::Element(element));
-                self.open_elements.push(idx);
-            } else {
-                let parent_idx = *self.open_elements.last().unwrap();
-                if let Some(Node::Element(parent)) = self.fragment_nodes.get_mut(parent_idx) {
-                    let child_idx = parent.children.len();
-                    parent.children.push(Node::Element(element));
-                    // Track using a simple index scheme
-                    self.open_elements.push(parent_idx * 1000 + child_idx);
-                }
-            }
-        } else {
-            let node = Node::Element(element);
-            let idx = self.insert_into_current(node);
-            self.open_elements.push(idx);
-        }
+        let node = Node::Element(element);
+        let idx = self.insert_into_current(node);
+        self.open_elements.push(idx);
+        self.open_element_names.push(String::from(tag_name));
     }
 
     fn insert_into_current(&mut self, node: Node) -> usize {
-        // Get the indices for navigation
-        let path: Vec<usize> = self.open_elements.clone();
-
-        // Navigate to the correct parent element using indices
-        let parent = self.navigate_to_element(&path);
+        let parent = navigate_to_element(&mut self.document.root, &self.open_elements);
         let idx = parent.children.len();
         parent.children.push(node);
         idx
     }
 
-    fn navigate_to_element(&mut self, path: &[usize]) -> &mut Element {
-        let indices: Vec<usize> = path.iter().skip(1).copied().collect();
-        let mut current = &mut self.document.root;
-
-        for idx in indices {
-            if idx < current.children.len() && matches!(current.children[idx], Node::Element(_)) {
-                current = match &mut current.children[idx] {
-                    Node::Element(elem) => elem,
-                    _ => unreachable!(),
-                };
-            } else {
-                break;
-            }
-        }
-
-        current
-    }
-
     fn insert_text(&mut self, text: String) {
         let text_node = Node::Text(Text::new(text));
-
-        if self.fragment_mode {
-            if self.open_elements.is_empty() {
-                self.fragment_nodes.push(text_node);
-            } else {
-                let parent_idx = *self.open_elements.last().unwrap();
-                if parent_idx < self.fragment_nodes.len() {
-                    if let Some(Node::Element(parent)) = self.fragment_nodes.get_mut(parent_idx) {
-                        parent.children.push(text_node);
-                    }
-                }
-            }
-        } else {
-            self.insert_into_current(text_node);
-        }
+        self.insert_into_current(text_node);
     }
 
     fn pop_element(&mut self) {
         self.open_elements.pop();
+        self.open_element_names.pop();
     }
 
-    fn pop_until(&mut self, _tag_name: &str) {
-        // In a full implementation, we'd pop until we find an element matching tag_name.
-        // For simplicity, we just pop the current element once.
-        if self.open_elements.last().is_some() {
+    /// Pop elements from the stack until one matching `tag_name` is found
+    /// and popped. Never pops the root sentinel.
+    fn pop_until(&mut self, tag_name: &str) {
+        while self.open_element_names.len() > 1 {
+            if self.open_element_names.last().map(String::as_str) == Some(tag_name) {
+                self.open_elements.pop();
+                self.open_element_names.pop();
+                return;
+            }
             self.open_elements.pop();
+            self.open_element_names.pop();
         }
     }
 
@@ -440,7 +403,7 @@ impl TreeBuilder {
     #[must_use]
     pub fn finish_fragment(mut self) -> Vec<Node> {
         self.flush_pending_text();
-        self.fragment_nodes
+        self.document.root.children
     }
 }
 
@@ -477,7 +440,8 @@ mod tests {
     #[test]
     fn test_simple_document() {
         let doc = parse(
-            "<!DOCTYPE html><html><head><title>Test</title></head><body><p>Hello</p></body></html>",
+            "<!DOCTYPE html><html><head><title>Test</title>\
+             </head><body><p>Hello</p></body></html>",
         );
         assert!(doc.doctype.is_some());
         assert_eq!(doc.doctype.as_ref().unwrap().name, "html");
@@ -516,6 +480,77 @@ mod tests {
         if let Some(Node::Element(div)) = nodes.first() {
             assert_eq!(div.get_attribute("class"), Some("container"));
             assert_eq!(div.get_attribute("id"), Some("main"));
+        }
+    }
+
+    #[test]
+    fn test_pop_until_nested() {
+        let nodes = parse_fragment("<div><span>Hello</span> World</div>");
+        assert_eq!(nodes.len(), 1);
+        if let Some(Node::Element(div)) = nodes.first() {
+            assert_eq!(div.tag_name, "div");
+            assert_eq!(div.children.len(), 2);
+            if let Some(Node::Element(span)) = div.children.first() {
+                assert_eq!(span.tag_name, "span");
+                assert_eq!(span.text_content(), Some("Hello".into()));
+            }
+        }
+    }
+
+    #[test]
+    fn test_deeply_nested_fragment() {
+        let nodes = parse_fragment("<div><ul><li><span>Deep</span></li></ul></div>");
+        assert_eq!(nodes.len(), 1);
+        if let Some(Node::Element(div)) = nodes.first() {
+            let ul = div.find_element("ul").unwrap();
+            let li = ul.find_element("li").unwrap();
+            let span = li.find_element("span").unwrap();
+            assert_eq!(span.text_content(), Some("Deep".into()));
+        }
+    }
+
+    #[test]
+    fn test_fragment_void_elements() {
+        let nodes = parse_fragment("<div><br><span>After</span></div>");
+        assert_eq!(nodes.len(), 1);
+        if let Some(Node::Element(div)) = nodes.first() {
+            // br is void, should not nest span inside it
+            assert_eq!(div.children.len(), 2);
+            if let Some(Node::Element(br)) = div.children.first() {
+                assert_eq!(br.tag_name, "br");
+                assert!(br.children.is_empty());
+            }
+        }
+    }
+
+    #[test]
+    fn test_fragment_multiple_top_level() {
+        let nodes = parse_fragment("<p>One</p><p>Two</p><p>Three</p>");
+        assert_eq!(nodes.len(), 3);
+    }
+
+    #[test]
+    fn test_many_children_fragment() {
+        use core::fmt::Write;
+        let mut html = String::from("<div>");
+        for i in 0..1100 {
+            let _ = write!(html, "<span>{i}</span>");
+        }
+        html.push_str("</div>");
+        let nodes = parse_fragment(&html);
+        assert_eq!(nodes.len(), 1);
+        if let Some(Node::Element(div)) = nodes.first() {
+            assert_eq!(div.children.len(), 1100);
+        }
+    }
+
+    #[test]
+    fn test_unmatched_end_tag() {
+        // Unmatched </span> should not crash or empty the stack
+        let nodes = parse_fragment("<div>Hello</span></div>");
+        assert_eq!(nodes.len(), 1);
+        if let Some(Node::Element(div)) = nodes.first() {
+            assert_eq!(div.tag_name, "div");
         }
     }
 }
