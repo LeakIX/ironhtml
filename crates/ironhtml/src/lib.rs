@@ -439,29 +439,27 @@ impl Html {
 /// Escape special HTML characters in text content.
 #[must_use]
 pub fn escape_html(s: &str) -> String {
-    let mut output = String::with_capacity(s.len());
-    for c in s.chars() {
-        match c {
-            '&' => output.push_str("&amp;"),
-            '<' => output.push_str("&lt;"),
-            '>' => output.push_str("&gt;"),
-            _ => output.push(c),
-        }
-    }
-    output
+    escape(s, false)
 }
 
 /// Escape special characters in attribute values.
+///
+/// Escapes everything [`escape_html`] does, plus `"` and `'`.
 #[must_use]
 pub fn escape_attr(s: &str) -> String {
+    escape(s, true)
+}
+
+/// Shared escaping logic for both text content and attribute values.
+fn escape(s: &str, quotes: bool) -> String {
     let mut output = String::with_capacity(s.len());
     for c in s.chars() {
         match c {
             '&' => output.push_str("&amp;"),
             '<' => output.push_str("&lt;"),
             '>' => output.push_str("&gt;"),
-            '"' => output.push_str("&quot;"),
-            '\'' => output.push_str("&#x27;"),
+            '"' if quotes => output.push_str("&quot;"),
+            '\'' if quotes => output.push_str("&#x27;"),
             _ => output.push(c),
         }
     }
