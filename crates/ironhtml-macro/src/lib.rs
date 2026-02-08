@@ -3,116 +3,13 @@
 //! Procedural macro for type-safe HTML construction with Rust-like syntax.
 //!
 //! This crate provides the [`html!`] macro that generates type-safe HTML
-//! using the `ironhtml` and `ironhtml-elements` crates.
+//! using the `ironhtml` and `ironhtml-elements` crates. Most users should
+//! depend on `ironhtml` with the `macros` feature instead of using this
+//! crate directly.
 //!
-//! ## Syntax
-//!
-//! ```rust
-//! use ironhtml_macro::html;
-//!
-//! let nav = html! {
-//!     ul.class("nav") {
-//!         li { a.href("/") { "Home" } }
-//!         li { a.href("/about") { "About" } }
-//!     }
-//! };
-//!
-//! assert!(nav.render().contains(r#"<ul class="nav">"#));
-//! ```
-//!
-//! ### Elements
-//!
-//! Elements are written as identifiers followed by optional attributes and children:
-//!
-//! ```rust
-//! use ironhtml_macro::html;
-//!
-//! let _ = html! { div };                    // Empty div
-//! let _ = html! { div { } };                // Empty div with explicit braces
-//! let _ = html! { div { "text" } };         // Div with text
-//! let _ = html! { div { span { } } };       // Nested elements
-//! ```
-//!
-//! ### Attributes
-//!
-//! Attributes use method-call syntax with `.`:
-//!
-//! ```rust
-//! use ironhtml_macro::html;
-//!
-//! let _ = html! { div.class("container") };
-//! let _ = html! { div.id("main").class("wrapper") };
-//! let _ = html! { input.type_("text").name("email") };
-//! let _ = html! { a.href("/").target("_blank") };
-//! ```
-//!
-//! ### Text Content
-//!
-//! String literals inside braces become text content:
-//!
-//! ```rust
-//! use ironhtml_macro::html;
-//!
-//! let p = html! { p { "Hello, World!" } };
-//! assert_eq!(p.render(), "<p>Hello, World!</p>");
-//!
-//! let span = html! { span { "Multiple " "strings " "concatenated" } };
-//! assert_eq!(span.render(), "<span>Multiple strings concatenated</span>");
-//! ```
-//!
-//! ### Rust Expressions
-//!
-//! Use `#` prefix to embed Rust expressions:
-//!
-//! ```rust
-//! use ironhtml_macro::html;
-//!
-//! let name = "World";
-//! let p = html! { p { "Hello, " #name "!" } };
-//! assert_eq!(p.render(), "<p>Hello, World!</p>");
-//!
-//! let classes = "btn btn-primary";
-//! let btn = html! { button.class(#classes) { "Click" } };
-//! assert!(btn.render().contains("btn btn-primary"));
-//! ```
-//!
-//! ### Loops
-//!
-//! Use `for` to iterate:
-//!
-//! ```rust
-//! use ironhtml_macro::html;
-//! use ironhtml::typed::Element;
-//! use ironhtml_elements::Li;
-//!
-//! let items = vec!["Apple", "Banana", "Cherry"];
-//! let ul = html! {
-//!     ul {
-//!         for item in #items {
-//!             li { #item }
-//!         }
-//!     }
-//! };
-//! assert!(ul.render().contains("<li>Apple</li>"));
-//! ```
-//!
-//! ### Conditionals
-//!
-//! Use `if` for conditional rendering:
-//!
-//! ```rust
-//! use ironhtml_macro::html;
-//!
-//! let show = true;
-//! let div = html! {
-//!     div {
-//!         if #show {
-//!             span { "Visible" }
-//!         }
-//!     }
-//! };
-//! assert!(div.render().contains("Visible"));
-//! ```
+//! See [`ironhtml::html!`](https://docs.rs/ironhtml/latest/ironhtml/macro.html.html)
+//! for full documentation and tested examples covering elements, attributes,
+//! text content, Rust expressions, loops, and conditionals.
 
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
