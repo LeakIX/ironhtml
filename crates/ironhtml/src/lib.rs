@@ -1,15 +1,63 @@
 //! # ironhtml
 //!
-//! A minimal, zero-dependency, no-std compatible HTML builder for Rust.
+//! A minimal, zero-dependency, `no_std` compatible HTML builder for Rust.
 //!
-//! This crate provides two APIs:
+//! ## Quick Start — `html!` Macro (Recommended)
 //!
-//! - **Untyped API**: Dynamic HTML construction with runtime tag names
-//! - **Typed API** (via [`typed`] module): Compile-time validated HTML structure
+//! The [`html!`] macro is the easiest way to build type-safe HTML.
+//! Enable it with `features = ["macros"]`:
 //!
-//! ## Typed API (Recommended)
+//! ```rust
+//! use ironhtml::html;
 //!
-//! The typed API uses Rust's type system to validate HTML structure at compile time:
+//! let page = html! {
+//!     html.lang("en") {
+//!         head {
+//!             meta.charset("UTF-8")
+//!             title { "My Page" }
+//!         }
+//!         body {
+//!             h1 { "Welcome" }
+//!             p { "Hello, World!" }
+//!         }
+//!     }
+//! };
+//!
+//! assert!(page.render().contains("<h1>Welcome</h1>"));
+//! ```
+//!
+//! The macro supports attributes, Rust expressions, loops, and conditionals:
+//!
+//! ```rust
+//! use ironhtml::html;
+//!
+//! let items = vec!["Apple", "Banana", "Cherry"];
+//! let show_title = true;
+//!
+//! let nav = html! {
+//!     div.class("container").id("main") {
+//!         if #show_title {
+//!             h1.class("title") { "Fruit List" }
+//!         }
+//!         ul.class("list") {
+//!             for item in #items {
+//!                 li { #item }
+//!             }
+//!         }
+//!     }
+//! };
+//!
+//! let html = nav.render();
+//! assert!(html.contains("<li>Apple</li>"));
+//! assert!(html.contains("Fruit List"));
+//! ```
+//!
+//! ## Typed API
+//!
+//! The typed API uses Rust's type system to validate HTML structure at
+//! compile time. Invalid nesting (e.g., `<ul><div>`) produces a
+//! compile-time error. The `html!` macro generates typed API calls
+//! under the hood.
 //!
 //! ```rust
 //! use ironhtml::typed::{Document, Element};
@@ -31,11 +79,10 @@
 //!     .build();
 //! ```
 //!
-//! Invalid nesting (e.g., `<ul><div>`) produces a compile-time error.
-//!
 //! ## Untyped API
 //!
-//! The untyped API allows dynamic HTML construction:
+//! The untyped API allows fully dynamic HTML construction with runtime
+//! tag names — useful when the structure is not known at compile time:
 //!
 //! ```rust
 //! use ironhtml::{Html, Node};
