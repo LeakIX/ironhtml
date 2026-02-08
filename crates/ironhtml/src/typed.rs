@@ -57,7 +57,7 @@ use core::marker::PhantomData;
 use ironhtml_attributes::AttributeValue;
 use ironhtml_elements::{CanContain, HtmlElement, Text};
 
-use crate::{escape_attr, escape_html};
+use crate::escape_html;
 
 /// A node in the typed HTML tree.
 #[derive(Debug, Clone)]
@@ -93,32 +93,18 @@ impl TypedNode {
                 attrs,
                 children,
             } => {
-                output.push('<');
-                output.push_str(tag);
-
-                for (name, value) in attrs {
-                    output.push(' ');
-                    output.push_str(name);
-                    if !value.is_empty() {
-                        output.push_str("=\"");
-                        output.push_str(&escape_attr(value));
-                        output.push('"');
-                    }
-                }
-
-                if *is_void && children.is_empty() {
-                    output.push_str(" />");
-                } else {
-                    output.push('>');
-
-                    for child in children {
-                        child.render_to(output);
-                    }
-
-                    output.push_str("</");
-                    output.push_str(tag);
-                    output.push('>');
-                }
+                crate::render_element_to(
+                    output,
+                    tag,
+                    *is_void,
+                    attrs,
+                    |out| {
+                        for child in children {
+                            child.render_to(out);
+                        }
+                    },
+                    !children.is_empty(),
+                );
             }
             Self::Text(text) => output.push_str(&escape_html(text)),
             Self::Raw(html) => output.push_str(html),
@@ -311,32 +297,18 @@ impl<E: HtmlElement> Element<E> {
 
     /// Render this element to an existing string buffer.
     pub fn render_to(&self, output: &mut String) {
-        output.push('<');
-        output.push_str(E::TAG);
-
-        for (name, value) in &self.attrs {
-            output.push(' ');
-            output.push_str(name);
-            if !value.is_empty() {
-                output.push_str("=\"");
-                output.push_str(&escape_attr(value));
-                output.push('"');
-            }
-        }
-
-        if E::VOID && self.children.is_empty() {
-            output.push_str(" />");
-        } else {
-            output.push('>');
-
-            for child in &self.children {
-                child.render_to(output);
-            }
-
-            output.push_str("</");
-            output.push_str(E::TAG);
-            output.push('>');
-        }
+        crate::render_element_to(
+            output,
+            E::TAG,
+            E::VOID,
+            &self.attrs,
+            |out| {
+                for child in &self.children {
+                    child.render_to(out);
+                }
+            },
+            !self.children.is_empty(),
+        );
     }
 }
 
