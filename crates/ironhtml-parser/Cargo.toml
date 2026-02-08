@@ -2,6 +2,7 @@
 name = "ironhtml-parser"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "HTML5 parser following the WHATWG Living Standard"

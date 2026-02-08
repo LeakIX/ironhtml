@@ -2,6 +2,7 @@
 name = "ironhtml-elements"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Type-safe HTML5 elements following the WHATWG Living Standard"
