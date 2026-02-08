@@ -553,4 +553,353 @@ mod tests {
             assert_eq!(div.tag_name, "div");
         }
     }
+
+    // ── pop_until tests ──────────────────────────────────────────────
+
+    #[test]
+    fn test_pop_until_skips_intermediate() {
+        // </div> should pop both <em> and <span>, closing at <div>
+        let nodes = parse_fragment("<div><span><em>Text</div>");
+        assert_eq!(nodes.len(), 1);
+        let div = nodes[0].as_element().unwrap();
+        assert_eq!(div.tag_name, "div");
+        // span was opened, em was opened inside span, then </div>
+        // pops em, span, div
+        let span = div.find_element("span").unwrap();
+        let em = span.find_element("em").unwrap();
+        assert_eq!(em.text_content(), Some("Text".into()));
+    }
+
+    #[test]
+    fn test_pop_until_no_match_preserves_root() {
+        // </nonexistent> pops elements but stops at root sentinel
+        let nodes = parse_fragment("<div><p>Hello</p></nonexistent></div>");
+        assert_eq!(nodes.len(), 1);
+        let div = nodes[0].as_element().unwrap();
+        assert_eq!(div.tag_name, "div");
+    }
+
+    #[test]
+    fn test_pop_until_closes_correct_level() {
+        // Nested <div>s: inner </div> should only close the inner one
+        let nodes = parse_fragment("<div><div><span>Inner</span></div><span>Outer</span></div>");
+        assert_eq!(nodes.len(), 1);
+        let outer = nodes[0].as_element().unwrap();
+        assert_eq!(outer.tag_name, "div");
+        assert_eq!(outer.children.len(), 2);
+        // First child: inner div
+        let inner = outer.children[0].as_element().unwrap();
+        assert_eq!(inner.tag_name, "div");
+        assert_eq!(
+            inner.find_element("span").unwrap().text_content(),
+            Some("Inner".into())
+        );
+        // Second child: outer span (after inner div was closed)
+        let outer_span = outer.children[1].as_element().unwrap();
+        assert_eq!(outer_span.tag_name, "span");
+        assert_eq!(outer_span.text_content(), Some("Outer".into()));
+    }
+
+    #[test]
+    fn test_pop_until_multiple_same_tag() {
+        // Three nested <span>s, one </span> closes only the innermost
+        let nodes = parse_fragment("<div><span><span><span>Deep</span>Mid</span>Top</span></div>");
+        assert_eq!(nodes.len(), 1);
+        let div = nodes[0].as_element().unwrap();
+        let s1 = div.find_element("span").unwrap();
+        let s2 = s1.find_element("span").unwrap();
+        let s3 = s2.find_element("span").unwrap();
+        assert_eq!(s3.text_content(), Some("Deep".into()));
+        // "Mid" is text after inner span closes, inside middle span
+        assert!(s2.children.len() >= 2);
+        // "Top" is text after middle span closes, inside outer span
+        assert!(s1.children.len() >= 2);
+    }
+
+    // ── fragment nesting tests ───────────────────────────────────────
+
+    #[test]
+    fn test_fragment_five_levels_deep() {
+        let nodes = parse_fragment(
+            "<div><section><article><header><h1>Title</h1>\
+             </header></article></section></div>",
+        );
+        assert_eq!(nodes.len(), 1);
+        let div = nodes[0].as_element().unwrap();
+        let section = div.find_element("section").unwrap();
+        let article = section.find_element("article").unwrap();
+        let header = article.find_element("header").unwrap();
+        let h1 = header.find_element("h1").unwrap();
+        assert_eq!(h1.text_content(), Some("Title".into()));
+    }
+
+    #[test]
+    fn test_fragment_text_at_every_level() {
+        let nodes = parse_fragment("<div>A<span>B<em>C</em>D</span>E</div>");
+        assert_eq!(nodes.len(), 1);
+        let div = nodes[0].as_element().unwrap();
+        // div has: text("A"), span, text("E")
+        assert_eq!(div.children.len(), 3);
+        assert_eq!(div.children[0].as_text().unwrap().data, "A");
+        let span = div.children[1].as_element().unwrap();
+        // span has: text("B"), em, text("D")
+        assert_eq!(span.children.len(), 3);
+        assert_eq!(span.children[0].as_text().unwrap().data, "B");
+        let em = span.children[1].as_element().unwrap();
+        assert_eq!(em.text_content(), Some("C".into()));
+        assert_eq!(span.children[2].as_text().unwrap().data, "D");
+        assert_eq!(div.children[2].as_text().unwrap().data, "E");
+    }
+
+    #[test]
+    fn test_fragment_siblings_with_children() {
+        let nodes = parse_fragment("<ul><li>One<em>!</em></li><li>Two</li><li>Three</li></ul>");
+        assert_eq!(nodes.len(), 1);
+        let ul = nodes[0].as_element().unwrap();
+        assert_eq!(ul.children.len(), 3);
+        // First li has text + em
+        let li1 = ul.children[0].as_element().unwrap();
+        assert_eq!(li1.children.len(), 2);
+        assert_eq!(li1.children[0].as_text().unwrap().data, "One");
+        assert_eq!(
+            li1.children[1].as_element().unwrap().text_content(),
+            Some("!".into())
+        );
+        // Second and third are simple
+        let li2 = ul.children[1].as_element().unwrap();
+        assert_eq!(li2.text_content(), Some("Two".into()));
+        let li3 = ul.children[2].as_element().unwrap();
+        assert_eq!(li3.text_content(), Some("Three".into()));
+    }
+
+    // ── fragment void element tests ──────────────────────────────────
+
+    #[test]
+    fn test_fragment_multiple_void_elements() {
+        let nodes = parse_fragment("<div><br><hr><img><input></div>");
+        assert_eq!(nodes.len(), 1);
+        let div = nodes[0].as_element().unwrap();
+        assert_eq!(div.children.len(), 4);
+        assert_eq!(div.children[0].as_element().unwrap().tag_name, "br");
+        assert_eq!(div.children[1].as_element().unwrap().tag_name, "hr");
+        assert_eq!(div.children[2].as_element().unwrap().tag_name, "img");
+        assert_eq!(div.children[3].as_element().unwrap().tag_name, "input");
+        // None should have children
+        for child in &div.children {
+            assert!(child.as_element().unwrap().children.is_empty());
+        }
+    }
+
+    #[test]
+    fn test_fragment_void_between_text() {
+        let nodes = parse_fragment("<p>Before<br>After</p>");
+        assert_eq!(nodes.len(), 1);
+        let p = nodes[0].as_element().unwrap();
+        assert_eq!(p.children.len(), 3);
+        assert_eq!(p.children[0].as_text().unwrap().data, "Before");
+        assert_eq!(p.children[1].as_element().unwrap().tag_name, "br");
+        assert_eq!(p.children[2].as_text().unwrap().data, "After");
+    }
+
+    #[test]
+    fn test_fragment_void_with_attributes() {
+        let nodes = parse_fragment(r#"<div><img src="a.png" alt="test"><br></div>"#);
+        assert_eq!(nodes.len(), 1);
+        let div = nodes[0].as_element().unwrap();
+        let img = div.children[0].as_element().unwrap();
+        assert_eq!(img.get_attribute("src"), Some("a.png"));
+        assert_eq!(img.get_attribute("alt"), Some("test"));
+        assert!(img.children.is_empty());
+    }
+
+    #[test]
+    fn test_fragment_void_nested_inside() {
+        // Void element inside a nested structure
+        let nodes = parse_fragment("<table><tr><td><input></td></tr></table>");
+        assert_eq!(nodes.len(), 1);
+        let table = nodes[0].as_element().unwrap();
+        let tr = table.find_element("tr").unwrap();
+        let td = tr.find_element("td").unwrap();
+        let input = td.find_element("input").unwrap();
+        assert!(input.children.is_empty());
+    }
+
+    // ── fragment comment tests ───────────────────────────────────────
+
+    #[test]
+    fn test_fragment_comment_top_level() {
+        let nodes = parse_fragment("<!-- top --><div>Hi</div>");
+        assert_eq!(nodes.len(), 2);
+        assert!(matches!(nodes[0], Node::Comment(_)));
+        if let Node::Comment(c) = &nodes[0] {
+            assert_eq!(c.data, " top ");
+        }
+        assert_eq!(nodes[1].as_element().unwrap().tag_name, "div");
+    }
+
+    #[test]
+    fn test_fragment_comment_inside_element() {
+        let nodes = parse_fragment("<div><!-- inside --></div>");
+        assert_eq!(nodes.len(), 1);
+        let div = nodes[0].as_element().unwrap();
+        assert_eq!(div.children.len(), 1);
+        assert!(matches!(div.children[0], Node::Comment(_)));
+    }
+
+    #[test]
+    fn test_fragment_comment_between_elements() {
+        let nodes = parse_fragment("<ul><li>A</li><!-- sep --><li>B</li></ul>");
+        assert_eq!(nodes.len(), 1);
+        let ul = nodes[0].as_element().unwrap();
+        assert_eq!(ul.children.len(), 3);
+        assert_eq!(ul.children[0].as_element().unwrap().tag_name, "li");
+        assert!(matches!(ul.children[1], Node::Comment(_)));
+        assert_eq!(ul.children[2].as_element().unwrap().tag_name, "li");
+    }
+
+    // ── fragment top-level variety tests ─────────────────────────────
+
+    #[test]
+    fn test_fragment_text_only() {
+        let nodes = parse_fragment("Just text");
+        assert_eq!(nodes.len(), 1);
+        assert_eq!(nodes[0].as_text().unwrap().data, "Just text");
+    }
+
+    #[test]
+    fn test_fragment_mixed_top_level() {
+        let nodes = parse_fragment("Hello <em>world</em> and <strong>more</strong>!");
+        // text, em, text, strong, text
+        assert_eq!(nodes.len(), 5);
+        assert_eq!(nodes[0].as_text().unwrap().data, "Hello ");
+        assert_eq!(nodes[1].as_element().unwrap().tag_name, "em");
+        assert_eq!(nodes[2].as_text().unwrap().data, " and ");
+        assert_eq!(nodes[3].as_element().unwrap().tag_name, "strong");
+        assert_eq!(nodes[4].as_text().unwrap().data, "!");
+    }
+
+    #[test]
+    fn test_fragment_empty() {
+        let nodes = parse_fragment("");
+        assert!(nodes.is_empty());
+    }
+
+    #[test]
+    fn test_fragment_whitespace_only() {
+        // Whitespace in InBody mode is NOT skipped
+        let nodes = parse_fragment("   ");
+        assert_eq!(nodes.len(), 1);
+        assert_eq!(nodes[0].as_text().unwrap().data, "   ");
+    }
+
+    // ── malformed input tests ────────────────────────────────────────
+
+    #[test]
+    fn test_malformed_only_end_tags() {
+        let nodes = parse_fragment("</div></span></p>");
+        // No start tags to match, nothing produced
+        assert!(nodes.is_empty());
+    }
+
+    #[test]
+    fn test_malformed_extra_end_tags() {
+        let nodes = parse_fragment("<div>Hello</div></div></div></div>");
+        assert_eq!(nodes.len(), 1);
+        let div = nodes[0].as_element().unwrap();
+        assert_eq!(div.text_content(), Some("Hello".into()));
+    }
+
+    #[test]
+    fn test_malformed_unclosed_tags() {
+        // Tags that are never closed
+        let nodes = parse_fragment("<div><span><em>Text");
+        assert_eq!(nodes.len(), 1);
+        let div = nodes[0].as_element().unwrap();
+        let span = div.find_element("span").unwrap();
+        let em = span.find_element("em").unwrap();
+        assert_eq!(em.text_content(), Some("Text".into()));
+    }
+
+    #[test]
+    fn test_malformed_interleaved_tags() {
+        // <b><i></b></i> - interleaved close order
+        let nodes = parse_fragment("<b><i>Text</b>After</i>");
+        // After </b> pops both i and b (pop_until finds b).
+        // "After" goes to root since both are closed.
+        // </i> is unmatched, ignored.
+        assert!(!nodes.is_empty());
+        let b = nodes[0].as_element().unwrap();
+        assert_eq!(b.tag_name, "b");
+    }
+
+    #[test]
+    fn test_malformed_deeply_mismatched() {
+        let nodes = parse_fragment("<a><b><c><d><e>Text</a>");
+        // </a> pops e, d, c, b, a
+        assert_eq!(nodes.len(), 1);
+        let a = nodes[0].as_element().unwrap();
+        assert_eq!(a.tag_name, "a");
+        assert!(a.find_element("e").is_some());
+    }
+
+    // ── full document tests ──────────────────────────────────────────
+
+    #[test]
+    fn test_document_head_elements() {
+        let doc = parse(
+            r#"<!DOCTYPE html><html><head>
+            <title>Test</title>
+            <meta charset="utf-8">
+            <link rel="stylesheet" href="style.css">
+            </head><body></body></html>"#,
+        );
+        let head = doc.head().unwrap();
+        assert!(head.find_element("title").is_some());
+        assert!(head.find_element("meta").is_some());
+        assert!(head.find_element("link").is_some());
+    }
+
+    #[test]
+    fn test_document_implicit_body() {
+        // No explicit <body> tag, elements go into implicit body
+        let doc = parse("<html><head></head><div>Content</div></html>");
+        let body = doc.body().unwrap();
+        let div = body.find_element("div").unwrap();
+        assert_eq!(div.text_content(), Some("Content".into()));
+    }
+
+    #[test]
+    fn test_document_implicit_head_and_body() {
+        // No head or body, just content
+        let doc = parse("<div>Content</div>");
+        assert_eq!(doc.root.tag_name, "html");
+        assert!(doc.head().is_some());
+        assert!(doc.body().is_some());
+        let body = doc.body().unwrap();
+        let div = body.find_element("div").unwrap();
+        assert_eq!(div.text_content(), Some("Content".into()));
+    }
+
+    #[test]
+    fn test_document_title() {
+        let doc = parse(
+            "<!DOCTYPE html><html><head><title>Hello World</title></head>\
+             <body></body></html>",
+        );
+        assert_eq!(doc.title(), Some(String::from("Hello World")));
+    }
+
+    #[test]
+    fn test_document_round_trip() {
+        let html = "<!DOCTYPE html><html><head><title>Test</title></head>\
+                     <body><p>Hello</p></body></html>";
+        let doc = parse(html);
+        let output = doc.to_html();
+        // Re-parse the output and verify structure
+        let doc2 = parse(&output);
+        assert_eq!(doc2.title(), Some(String::from("Test")));
+        let body = doc2.body().unwrap();
+        let p = body.find_element("p").unwrap();
+        assert_eq!(p.text_content(), Some("Hello".into()));
+    }
 }
