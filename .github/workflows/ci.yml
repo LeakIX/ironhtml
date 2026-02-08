@@ -33,6 +33,22 @@ jobs:
       - name: Run doc tests
         run: make test-doc
 
+  msrv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust 1.75.0
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.75.0"
+
+      - name: Build
+        run: make build
+
+      - name: Run tests
+        run: make test
+
   wasm:
     runs-on: ubuntu-latest
     steps:
