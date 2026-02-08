@@ -110,12 +110,21 @@ test: ## Run all tests
 .PHONY: test-doc
 test-doc: ## Run documentation tests
 	@echo "Running doc tests..."
-	$(CARGO) test --doc
+	$(CARGO) test --doc --features macros
 
 .PHONY: test-parse5
 test-parse5: ## Run parse5 integration tests
 	@echo "Running parse5 integration tests..."
 	@cd tests/parse5 && npm install --silent && npm test
+
+# =============================================================================
+# Benchmarks
+# =============================================================================
+
+.PHONY: bench
+bench: ## Run benchmarks
+	@echo "Running benchmarks..."
+	$(CARGO) bench -p ironhtml --features macros
 
 # =============================================================================
 # Documentation
@@ -139,6 +148,35 @@ doc-open: ## Generate and open documentation
 clean: ## Clean build artifacts
 	@echo "Cleaning..."
 	rm -rf target
+
+# =============================================================================
+# Publishing
+# =============================================================================
+
+# Crates must be published in dependency order.
+# Sleep between publishes to let the crates.io index update.
+PUBLISH_CRATES := \
+	ironhtml-elements \
+	ironhtml-attributes \
+	ironhtml-macro \
+	ironhtml-parser \
+	ironhtml \
+	ironhtml-bootstrap
+
+.PHONY: publish
+publish: ## Publish all crates to crates.io
+	@for crate in $(PUBLISH_CRATES); do \
+		echo "Publishing $$crate..."; \
+		$(CARGO) publish -p $$crate || exit 1; \
+		echo "Waiting for crates.io index to update..."; \
+		sleep 30; \
+	done
+	@echo "All crates published successfully"
+
+.PHONY: publish-dry-run
+publish-dry-run: ## Dry-run publish for all crates
+	$(CARGO) package --workspace --allow-dirty
+	@echo "Dry-run complete — all crates are ready to publish"
 
 # =============================================================================
 # CI
