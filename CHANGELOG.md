@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-02-07
+
 ### Added
 
 - Initial release as `ironhtml` (renamed from `html-builder`)
@@ -22,3 +24,6 @@ All notable changes to this project will be documented in this file.
 - WebAssembly build target support
 - Automatic XSS protection via HTML/attribute escaping
 - parse5 integration tests for HTML5 spec compliance
+
+[Unreleased]: https://github.com/LeakIX/ironhtml/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/LeakIX/ironhtml/releases/tag/v1.0.0

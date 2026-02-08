@@ -2,8 +2,10 @@
 name = "ironhtml-macro"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
+readme.workspace = true
 description = "Procedural macro for type-safe HTML construction"
 keywords = ["html", "macro", "proc-macro", "type-safe"]
 categories = ["web-programming", "development-tools::procedural-macro-helpers"]

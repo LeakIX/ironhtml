@@ -1,4 +1,25 @@
 /target
-Cargo.lock
 node_modules/
 /package-lock.json
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+
+# Logs
+*.log
+
+# Temporary
+*.tmp
+*.bak
