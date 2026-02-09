@@ -40,6 +40,7 @@ extern crate std;
 extern crate alloc;
 
 mod dom;
+mod entities;
 mod tokenizer;
 mod tree_builder;
 mod validator;

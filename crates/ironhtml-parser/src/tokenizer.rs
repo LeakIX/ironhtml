@@ -10,6 +10,8 @@
 use alloc::string::String;
 use alloc::vec::Vec;
 
+use crate::entities;
+
 /// A token produced by the tokenizer.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Token {
@@ -106,6 +108,147 @@ impl<'a> Tokenizer<'a> {
         self.chars.peek().map(|(_, c)| *c)
     }
 
+    /// Return the unconsumed portion of the input starting at the
+    /// current peek position.
+    fn remaining(&mut self) -> &'a str {
+        let offset = self.chars.peek().map_or(self.input.len(), |(i, _)| *i);
+        &self.input[offset..]
+    }
+
+    /// Try to consume an HTML character reference starting *after*
+    /// the `&` that has already been consumed.
+    ///
+    /// Returns decoded characters on success, or `None` if the
+    /// sequence is not a valid reference (caller should emit `&`
+    /// literally).
+    fn consume_character_reference(&mut self, in_attribute: bool) -> Option<&'static [char]> {
+        match self.peek() {
+            Some('#') => {
+                self.consume(); // '#'
+                self.consume_numeric_reference().map(core::slice::from_ref)
+            }
+            Some(c) if c.is_ascii_alphanumeric() => self.consume_named_reference(in_attribute),
+            _ => None,
+        }
+    }
+
+    /// Consume a numeric character reference (`&#...;` or `&#x...;`).
+    /// The `#` has already been consumed.
+    fn consume_numeric_reference(&mut self) -> Option<&'static char> {
+        let hex = matches!(self.peek(), Some('x' | 'X'));
+        if hex {
+            self.consume(); // 'x' or 'X'
+        }
+
+        let remaining = self.remaining();
+        let mut len = 0;
+        for ch in remaining.chars() {
+            let valid = if hex {
+                ch.is_ascii_hexdigit()
+            } else {
+                ch.is_ascii_digit()
+            };
+            if valid {
+                len += ch.len_utf8();
+            } else {
+                break;
+            }
+        }
+
+        if len == 0 {
+            return None;
+        }
+
+        let digits = &remaining[..len];
+        let codepoint = if hex {
+            u32::from_str_radix(digits, 16).ok()?
+        } else {
+            digits.parse::<u32>().ok()?
+        };
+
+        // Consume the digit characters
+        for _ in digits.chars() {
+            self.consume();
+        }
+
+        // Consume trailing ';' if present
+        if self.peek() == Some(';') {
+            self.consume();
+        }
+
+        // Per WHATWG: null → U+FFFD, surrogates/out-of-range → U+FFFD
+        let ch = if codepoint == 0 {
+            '\u{FFFD}'
+        } else {
+            char::from_u32(codepoint).unwrap_or('\u{FFFD}')
+        };
+
+        // Leak a single-char allocation so we can return &'static.
+        // This is a small, bounded cost: numeric refs are rare and
+        // the set of distinct codepoints encountered is finite.
+        Some(alloc::boxed::Box::leak(alloc::boxed::Box::new(ch)))
+    }
+
+    /// Consume a named character reference. The first alphanumeric
+    /// character has NOT been consumed yet (it was only peeked).
+    fn consume_named_reference(&mut self, in_attribute: bool) -> Option<&'static [char]> {
+        let remaining = self.remaining();
+
+        // Collect the longest alphanumeric prefix
+        let mut name_len = 0;
+        for ch in remaining.chars() {
+            if ch.is_ascii_alphanumeric() {
+                name_len += ch.len_utf8();
+            } else {
+                break;
+            }
+        }
+
+        if name_len == 0 {
+            return None;
+        }
+
+        // Try longest-match first, shrink until we find one
+        let name_str = &remaining[..name_len];
+        let mut match_len = name_str.len();
+        while match_len > 0 {
+            let candidate = &name_str[..match_len];
+            if let Some(chars) = entities::lookup(candidate) {
+                // Check for trailing ';'
+                let has_semi = remaining.as_bytes().get(match_len) == Some(&b';');
+
+                // WHATWG: in attributes, if no ';' and next char
+                // is '=' or alphanumeric, don't decode
+                if in_attribute && !has_semi {
+                    let next = remaining.as_bytes().get(match_len);
+                    if matches!(next, Some(b'=' | b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9')) {
+                        return None;
+                    }
+                }
+
+                // Consume the matched name chars
+                for _ in candidate.chars() {
+                    self.consume();
+                }
+                // Consume ';' if present
+                if has_semi {
+                    self.consume();
+                }
+
+                return Some(chars);
+            }
+
+            // Shrink: try next shorter prefix
+            match_len = candidate[..match_len]
+                .char_indices()
+                .rev()
+                .nth(0)
+                .map_or(0, |(i, _)| i);
+        }
+
+        None
+    }
+
     fn emit_current_tag(&mut self) -> Token {
         let name = core::mem::take(&mut self.current_tag_name).to_ascii_lowercase();
         let attrs = core::mem::take(&mut self.current_attrs);
@@ -144,6 +287,16 @@ impl<'a> Tokenizer<'a> {
             match self.state {
                 State::Data => match self.consume() {
                     Some('<') => self.state = State::TagOpen,
+                    Some('&') => {
+                        if let Some(chars) = self.consume_character_reference(false) {
+                            let first = chars[0];
+                            for &ch in &chars[1..] {
+                                self.pending_tokens.push(Token::Character(ch));
+                            }
+                            return Some(Token::Character(first));
+                        }
+                        return Some(Token::Character('&'));
+                    }
                     Some(c) => return Some(Token::Character(c)),
                     None => return Some(Token::Eof),
                 },
@@ -298,6 +451,15 @@ impl<'a> Tokenizer<'a> {
                         self.emit_current_attr();
                         self.state = State::AfterAttributeValueQuoted;
                     }
+                    Some('&') => {
+                        if let Some(chars) = self.consume_character_reference(true) {
+                            for &ch in chars {
+                                self.current_attr_value.push(ch);
+                            }
+                        } else {
+                            self.current_attr_value.push('&');
+                        }
+                    }
                     Some(c) => {
                         self.current_attr_value.push(c);
                     }
@@ -312,6 +474,15 @@ impl<'a> Tokenizer<'a> {
                     Some('\'') => {
                         self.emit_current_attr();
                         self.state = State::AfterAttributeValueQuoted;
+                    }
+                    Some('&') => {
+                        if let Some(chars) = self.consume_character_reference(true) {
+                            for &ch in chars {
+                                self.current_attr_value.push(ch);
+                            }
+                        } else {
+                            self.current_attr_value.push('&');
+                        }
                     }
                     Some(c) => {
                         self.current_attr_value.push(c);
@@ -334,6 +505,16 @@ impl<'a> Tokenizer<'a> {
                         self.consume();
                         self.state = State::Data;
                         return Some(self.emit_current_tag());
+                    }
+                    Some('&') => {
+                        self.consume();
+                        if let Some(chars) = self.consume_character_reference(true) {
+                            for &ch in chars {
+                                self.current_attr_value.push(ch);
+                            }
+                        } else {
+                            self.current_attr_value.push('&');
+                        }
                     }
                     Some(c) => {
                         self.consume();
@@ -693,5 +874,181 @@ mod tests {
                 self_closing: false,
             })
         );
+    }
+
+    // ── character reference tests ────────────────────────────────────
+
+    #[test]
+    fn test_named_entity_in_text() {
+        let mut tokenizer = Tokenizer::new("a&amp;b");
+        assert_eq!(tokenizer.next(), Some(Token::Character('a')));
+        assert_eq!(tokenizer.next(), Some(Token::Character('&')));
+        assert_eq!(tokenizer.next(), Some(Token::Character('b')));
+    }
+
+    #[test]
+    fn test_named_entity_lt_gt() {
+        let tokens: Vec<_> = Tokenizer::new("&lt;div&gt;").collect();
+        let chars: alloc::string::String = tokens
+            .iter()
+            .filter_map(|t| match t {
+                Token::Character(c) => Some(*c),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(chars, "<div>");
+    }
+
+    #[test]
+    fn test_numeric_decimal_entity() {
+        let mut tokenizer = Tokenizer::new("&#65;");
+        assert_eq!(tokenizer.next(), Some(Token::Character('A')));
+    }
+
+    #[test]
+    fn test_numeric_hex_entity() {
+        let mut tokenizer = Tokenizer::new("&#x41;");
+        assert_eq!(tokenizer.next(), Some(Token::Character('A')));
+    }
+
+    #[test]
+    fn test_numeric_hex_uppercase() {
+        let mut tokenizer = Tokenizer::new("&#X41;");
+        assert_eq!(tokenizer.next(), Some(Token::Character('A')));
+    }
+
+    #[test]
+    fn test_entity_without_semicolon() {
+        // &amp without ; should still decode (legacy compat)
+        let tokens: Vec<_> = Tokenizer::new("&amp ").collect();
+        let chars: alloc::string::String = tokens
+            .iter()
+            .filter_map(|t| match t {
+                Token::Character(c) => Some(*c),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(chars, "& ");
+    }
+
+    #[test]
+    fn test_unknown_entity_passthrough() {
+        // &unknown; should pass through as literal text
+        let tokens: Vec<_> = Tokenizer::new("&unknown;").collect();
+        let chars: alloc::string::String = tokens
+            .iter()
+            .filter_map(|t| match t {
+                Token::Character(c) => Some(*c),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(chars, "&unknown;");
+    }
+
+    #[test]
+    fn test_ampersand_alone() {
+        let mut tokenizer = Tokenizer::new("&");
+        assert_eq!(tokenizer.next(), Some(Token::Character('&')));
+        assert_eq!(tokenizer.next(), None);
+    }
+
+    #[test]
+    fn test_ampersand_followed_by_space() {
+        let mut tokenizer = Tokenizer::new("& ");
+        assert_eq!(tokenizer.next(), Some(Token::Character('&')));
+        assert_eq!(tokenizer.next(), Some(Token::Character(' ')));
+    }
+
+    #[test]
+    fn test_entity_in_double_quoted_attr() {
+        let mut tokenizer = Tokenizer::new(r#"<a href="?a=1&amp;b=2">"#);
+        assert_eq!(
+            tokenizer.next(),
+            Some(Token::StartTag {
+                name: "a".into(),
+                attributes: vec![("href".into(), "?a=1&b=2".into()),],
+                self_closing: false,
+            })
+        );
+    }
+
+    #[test]
+    fn test_entity_in_single_quoted_attr() {
+        let mut tokenizer = Tokenizer::new("<a href='?a=1&amp;b=2'>");
+        assert_eq!(
+            tokenizer.next(),
+            Some(Token::StartTag {
+                name: "a".into(),
+                attributes: vec![("href".into(), "?a=1&b=2".into()),],
+                self_closing: false,
+            })
+        );
+    }
+
+    #[test]
+    fn test_entity_in_unquoted_attr() {
+        let mut tokenizer = Tokenizer::new("<input value=a&amp;b>");
+        assert_eq!(
+            tokenizer.next(),
+            Some(Token::StartTag {
+                name: "input".into(),
+                attributes: vec![("value".into(), "a&b".into()),],
+                self_closing: false,
+            })
+        );
+    }
+
+    #[test]
+    fn test_numeric_entity_in_attr() {
+        let mut tokenizer = Tokenizer::new(r#"<span data-x="&#169;">"#);
+        assert_eq!(
+            tokenizer.next(),
+            Some(Token::StartTag {
+                name: "span".into(),
+                attributes: vec![("data-x".into(), "\u{00A9}".into()),],
+                self_closing: false,
+            })
+        );
+    }
+
+    #[test]
+    fn test_attr_entity_no_semi_before_equals() {
+        // WHATWG: in attribute, &notit= should NOT decode as ¬it=
+        // because next char after "not" is 'i' (alphanumeric)
+        let mut tokenizer = Tokenizer::new(r#"<a href="?notit=1">"#);
+        assert_eq!(
+            tokenizer.next(),
+            Some(Token::StartTag {
+                name: "a".into(),
+                attributes: vec![("href".into(), "?notit=1".into()),],
+                self_closing: false,
+            })
+        );
+    }
+
+    #[test]
+    fn test_numeric_zero_replacement() {
+        // &#0; → U+FFFD replacement character (per WHATWG spec)
+        let mut tokenizer = Tokenizer::new("&#0;");
+        assert_eq!(tokenizer.next(), Some(Token::Character('\u{FFFD}')));
+    }
+
+    #[test]
+    fn test_nbsp_entity() {
+        let mut tokenizer = Tokenizer::new("&nbsp;");
+        assert_eq!(tokenizer.next(), Some(Token::Character('\u{00A0}')));
+    }
+
+    #[test]
+    fn test_multiple_entities() {
+        let tokens: Vec<_> = Tokenizer::new("&lt;&amp;&gt;").collect();
+        let chars: alloc::string::String = tokens
+            .iter()
+            .filter_map(|t| match t {
+                Token::Character(c) => Some(*c),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(chars, "<&>");
     }
 }

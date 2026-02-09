@@ -902,4 +902,79 @@ mod tests {
         let p = body.find_element("p").unwrap();
         assert_eq!(p.text_content(), Some("Hello".into()));
     }
+
+    // ── entity decoding integration tests ────────────────────────────
+
+    #[test]
+    fn test_entity_in_text_content() {
+        let nodes = parse_fragment("<p>&amp; &lt; &gt;</p>");
+        let p = nodes[0].as_element().unwrap();
+        assert_eq!(p.text_content(), Some("& < >".into()));
+    }
+
+    #[test]
+    fn test_entity_in_attribute_value() {
+        let nodes = parse_fragment(r#"<a href="?a=1&amp;b=2">link</a>"#);
+        let a = nodes[0].as_element().unwrap();
+        assert_eq!(a.get_attribute("href"), Some("?a=1&b=2"));
+    }
+
+    #[test]
+    fn test_numeric_entity_in_text() {
+        let nodes = parse_fragment("<p>&#65;&#66;&#67;</p>");
+        let p = nodes[0].as_element().unwrap();
+        assert_eq!(p.text_content(), Some("ABC".into()));
+    }
+
+    #[test]
+    fn test_hex_entity_in_text() {
+        let nodes = parse_fragment("<p>&#x41;&#x42;&#x43;</p>");
+        let p = nodes[0].as_element().unwrap();
+        assert_eq!(p.text_content(), Some("ABC".into()));
+    }
+
+    #[test]
+    fn test_nbsp_entity_in_text() {
+        let nodes = parse_fragment("<p>hello&nbsp;world</p>");
+        let p = nodes[0].as_element().unwrap();
+        assert_eq!(p.text_content(), Some("hello\u{00A0}world".into()));
+    }
+
+    #[test]
+    fn test_entity_mixed_with_tags() {
+        let nodes = parse_fragment("<div>&lt;script&gt;alert(1)&lt;/script&gt;</div>");
+        let div = nodes[0].as_element().unwrap();
+        assert_eq!(div.text_content(), Some("<script>alert(1)</script>".into()));
+    }
+
+    #[test]
+    fn test_unknown_entity_passthrough() {
+        let nodes = parse_fragment("<p>&unknown;</p>");
+        let p = nodes[0].as_element().unwrap();
+        assert_eq!(p.text_content(), Some("&unknown;".into()));
+    }
+
+    #[test]
+    fn test_bare_ampersand_passthrough() {
+        let nodes = parse_fragment("<p>A & B</p>");
+        let p = nodes[0].as_element().unwrap();
+        assert_eq!(p.text_content(), Some("A & B".into()));
+    }
+
+    #[test]
+    fn test_entity_copyright_symbol() {
+        let nodes = parse_fragment("<p>&copy; 2024</p>");
+        let p = nodes[0].as_element().unwrap();
+        assert_eq!(p.text_content(), Some("\u{00A9} 2024".into()));
+    }
+
+    #[test]
+    fn test_entity_in_title() {
+        let doc = parse(
+            "<!DOCTYPE html><html><head>\
+             <title>A &amp; B</title>\
+             </head><body></body></html>",
+        );
+        assert_eq!(doc.title(), Some(String::from("A & B")));
+    }
 }
