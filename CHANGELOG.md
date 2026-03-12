@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- Bumped `syn` from 2.0.114 to 2.0.117
+
 ## [1.0.0] - 2026-02-07
 
 ### Added
