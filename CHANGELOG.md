@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- Bump `quote` from 1.0.44 to 1.0.45
+
 ## [1.0.0] - 2026-02-07
 
 ### Added
