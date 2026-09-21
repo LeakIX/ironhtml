@@ -18,7 +18,7 @@ ironhtml-macro = { version = "1", path = "crates/ironhtml-macro" }
 ironhtml-bootstrap = { version = "1", path = "crates/ironhtml-bootstrap" }
 proc-macro2 = "1"
 quote = "1"
-syn = { version = "2", features = ["full", "parsing", "extra-traits"] }
+syn = { version = "3", features = ["full", "parsing", "extra-traits"] }
 
 [workspace.lints.rust]
 unsafe_code = "deny"
