@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Bumped `syn` from 2.0.114 to 2.0.117
+- Bumped `syn` from 2.0.117 to 3.0.9
 
 ## [1.0.0] - 2026-02-07
 

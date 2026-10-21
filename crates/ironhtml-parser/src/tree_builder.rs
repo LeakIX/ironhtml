@@ -322,10 +322,8 @@ impl TreeBuilder {
                 }
             }
 
-            InsertionMode::AfterBody => {
-                if name_lower == "html" {
-                    self.insertion_mode = InsertionMode::AfterAfterBody;
-                }
+            InsertionMode::AfterBody if name_lower == "html" => {
+                self.insertion_mode = InsertionMode::AfterAfterBody;
             }
 
             _ => {}

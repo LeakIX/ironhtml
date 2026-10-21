@@ -142,7 +142,7 @@ impl Node {
     }
 
     /// Get this node as a mutable element, if it is one.
-    pub fn as_element_mut(&mut self) -> Option<&mut Element> {
+    pub const fn as_element_mut(&mut self) -> Option<&mut Element> {
         match self {
             Self::Element(e) => Some(e),
             _ => None,
